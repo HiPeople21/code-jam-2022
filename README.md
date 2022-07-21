@@ -1,6 +1,15 @@
 # Sensational Sirens - CodeJam 2022
 
 # Development
+## Function documentation
+Please document your functions
+```python
+def add(left: int, right: int) -> int:
+  """Adds two numbers"""
+  return left + right
+```
+## Type hinting
+Where possible, please type-hint your functions. Ask if you need help with this.
 
 ## Code style
 Please see [the Black code style](https://black.readthedocs.io/en/stable/the_black_code_style/current_style.html) for the code style that we will be following.
