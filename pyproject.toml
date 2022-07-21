@@ -1,8 +1,8 @@
 [tool.poetry]
-name = "Name"
+name = "sirenity"
 version = "0.1.0"
 description = ""
-authors = ["Author 1 <email@mail.com>"]
+authors = []
 license = "MIT"
 
 [tool.poetry.dependencies]
