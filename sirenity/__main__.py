@@ -1,7 +1,5 @@
 def main():
-    """
-    The main function
-    """
+    """The main function"""
     print("Hello, world")
 
 
