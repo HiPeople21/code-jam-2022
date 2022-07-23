@@ -66,6 +66,7 @@ class TestProblemManager(unittest.TestCase):
         self.assertTrue(isinstance(self.manager.get_random_problem(), Problem))
 
     def test_all(self):
+        """Tests problems in order"""
         self.create_table()
         self.add_and_get_problem()
         self.get_error()
