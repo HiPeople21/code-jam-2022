@@ -6,8 +6,6 @@ from sirenity.euler import ProblemManager
 from sirenity.euler.problem import Problem
 from sirenity.euler.problems_manager import NotFoundError
 
-unittest.TestLoader.sortTestMethodsUsing = None
-
 
 class TestProblemManager(unittest.TestCase):
     """Tests ProblemManager"""
