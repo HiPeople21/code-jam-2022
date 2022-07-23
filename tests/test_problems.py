@@ -1,7 +1,7 @@
 import os
 import sqlite3
 
-import pytest
+import unittest
 
 from sirenity.euler import ProblemManager
 from sirenity.euler.problem import Problem
@@ -18,7 +18,7 @@ with open("test.db", "w") as f:
 manager = ProblemManager("test.db")
 
 
-class TestClass:
+class TestProblemManager(unittest.TestCase):
     """Tests ProblemManager"""
 
     def test_create_table(self) -> None:
@@ -29,20 +29,20 @@ class TestClass:
         cur.execute(
             "SELECT name FROM sqlite_master WHERE type='table' AND name='problems';"
         )
-        assert len(cur.fetchall()) == 1
+        self.assertEqual(len(cur.fetchall()), 1)
         con.close()
 
     def test_add_and_get_problem(self) -> None:
         """Tests that problems are added and are retrieved"""
         manager.add_to_db(prompt="Problem prompt", solution="solution")
         problem = manager.get_at_id(1)
-        assert problem.id == 1
-        assert problem.prompt == "Problem prompt"
-        assert problem.solution == "solution"
+        self.asserEqual(problem.id, 1)
+        self.asserEqual(problem.prompt, "Problem prompt")
+        self.asserEqual(problem.solution, "solution")
 
     def test_get_error(self) -> None:
         """Tests that error is thrown if id is out of range"""
-        with pytest.raises(Exception):
+        with self.assertRaises(Exception):
             manager.get_at_id(2)
 
     def test_check_solution(self) -> None:
@@ -50,10 +50,14 @@ class TestClass:
         Tests that the class returns the right boolean
         depending on if the solution is correct or not
         """
-        assert manager.check_solution("solution", 1) == True
-        assert manager.check_solution("20933", 1) == False
+        self.assertTrue(manager.check_solution("solution", 1))
+        self.assertFalse(manager.check_solution("20933", 1))
 
     def test_check_random_problem(self) -> None:
         """Checks that a random problem is returned"""
 
-        assert isinstance(manager.get_random_problem(), Problem)
+        self.assertTrue(isinstance(manager.get_random_problem(), Problem))
+
+
+if __name__ == "__main__":
+    unittest.main()
