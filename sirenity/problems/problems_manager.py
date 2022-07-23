@@ -1,5 +1,6 @@
-from problem import Problem
 import sqlite3
+
+from problem import Problem
 
 
 class ProblemManager:
@@ -83,8 +84,8 @@ class ProblemManager:
             raise Exception(f"Problem of id {id} does not exist")
         problem = Problem(row[0], row[1], row[2])
         return problem
-    
-    def check_solution(self, value:str, id:int) -> bool:
+
+    def check_solution(self, value: str, id: int) -> bool:
         return self.get_at_id(id).solution == value
 
 
