@@ -1,9 +1,9 @@
-import sqlite3
 import random
-
-from .problem import Problem
+import sqlite3
 
 from problem import Problem
+
+from .problem import Problem
 
 
 class ProblemManager:
