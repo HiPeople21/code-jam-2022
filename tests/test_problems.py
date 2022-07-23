@@ -3,7 +3,9 @@ import sqlite3
 import pytest
 
 from sirenity.problems import ProblemManager
+from sirenity.problems.problem import Problem
 
+# Clear db
 with open("test.db", "w") as f:
     f.write("")
 
@@ -36,3 +38,16 @@ class TestClass:
         """Tests that error is thrown if id is out of range"""
         with pytest.raises(Exception):
             manager.get_at_id(2)
+
+    def test_check_solution(self) -> None:
+        """
+        Tests that the class returns the right boolean
+        depending on if the solution is correct or not
+        """
+        assert manager.check_solution("solution", 1) == True
+        assert manager.check_solution("20933", 1) == False
+
+    def test_check_random_problem(self) -> None:
+        """Checks that a random problem is returned"""
+
+        assert isinstance(manager.get_random_problem(), Problem)
