@@ -3,8 +3,6 @@ import random
 
 from .problem import Problem
 
-from problem import Problem
-
 
 class ProblemManager:
     """Manages changes in database"""

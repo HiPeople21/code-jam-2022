@@ -2,8 +2,8 @@ import sqlite3
 
 import pytest
 
-from sirenity.problems import ProblemManager
-from sirenity.problems.problem import Problem
+from sirenity.euler import ProblemManager
+from sirenity.euler.problem import Problem
 
 # Clear db
 with open("test.db", "w") as f:
