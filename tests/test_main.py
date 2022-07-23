@@ -1,7 +1,11 @@
+import unittest
+
 from sirenity import __main__
 
 
-def test_main():
-    """Tests that running the main function does not error"""
-    # Should not error
-    __main__.main()
+class ApplicationTest(unittest.TestCase):
+    """Tests for the sirenity application"""
+
+    def test_main(self):
+        """Tests that main function can be run"""
+        self.assertTrue(callable(__main__.main))
