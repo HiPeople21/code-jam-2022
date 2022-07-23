@@ -5,6 +5,8 @@ from .problem import Problem
 
 
 class NotFoundError(Exception):
+    """Custom Exception"""
+
     pass
 
 
@@ -27,7 +29,6 @@ class ProblemManager:
 
         :return: None
         """
-
         self._cur.execute(
             """
             CREATE TABLE IF NOT EXISTS problems (
@@ -120,6 +121,9 @@ class ProblemManager:
 
         :return: random problem
         """
+        no_of_problems = self.get_number_of_problems()
+        if no_of_problems == 0:
+            raise NotFoundError("No problems found in table")
         id = random.randint(1, self.get_number_of_problems())
         return self.get_at_id(id)
 

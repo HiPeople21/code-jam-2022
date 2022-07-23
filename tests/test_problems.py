@@ -50,15 +50,19 @@ class TestProblemManager(unittest.TestCase):
             self.manager.get_at_id(2)
 
     def check_solution(self) -> None:
-        """
-        Tests that the class returns the right boolean
-        depending on if the solution is correct or not
-        """
+        """Tests that the class returns the right boolean depending on if the solution is correct or not"""
+        if self.manager.get_number_of_problems() == 0:
+            self.manager.add_to_db(prompt="Problem prompt", solution="solution")
+
         self.assertTrue(self.manager.check_solution("solution", 1))
         self.assertFalse(self.manager.check_solution("20933", 1))
 
     def check_random_problem(self) -> None:
         """Checks that a random problem is returned"""
+        if self.manager.get_number_of_problems() == 0:
+            with self.assertRaises(NotFoundError):
+                self.manager.get_random_problem()
+            self.manager.add_to_db(prompt="Problem prompt", solution="solution")
         self.assertTrue(isinstance(self.manager.get_random_problem(), Problem))
 
     def test_all(self):
