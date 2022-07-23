@@ -1,6 +1,5 @@
 import os
 import sqlite3
-
 import unittest
 
 from sirenity.euler import ProblemManager
