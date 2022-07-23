@@ -1,7 +1,6 @@
 import random
 import sqlite3
 
-
 from .problem import Problem
 
 
