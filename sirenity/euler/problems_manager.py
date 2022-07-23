@@ -4,6 +4,10 @@ import sqlite3
 from .problem import Problem
 
 
+class NotFoundError(Exception):
+    pass
+
+
 class ProblemManager:
     """Manages changes in database"""
 
@@ -82,7 +86,7 @@ class ProblemManager:
 
         row = self._cur.fetchone()
         if row is None:
-            raise Exception(f"Problem of id {id} does not exist")
+            raise NotFoundError(f"Problem of id {id} does not exist")
         problem = Problem(row[0], row[1], row[2])
         return problem
 
