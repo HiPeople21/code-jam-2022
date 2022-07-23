@@ -1,5 +1,7 @@
-from problem import Problem
 import sqlite3
+import random
+
+from .problem import Problem
 
 
 class ProblemManager:
@@ -83,15 +85,46 @@ class ProblemManager:
             raise Exception(f"Problem of id {id} does not exist")
         problem = Problem(row[0], row[1], row[2])
         return problem
-    
-    def check_solution(self, value:str, id:int) -> bool:
+
+    def check_solution(self, value: str, id: int) -> bool:
+        """
+        Checks if solution is correct
+
+        :param value: value returned by the program written by the user
+        :param id: id of the problem
+        :return: True if solution is correct
+        """
         return self.get_at_id(id).solution == value
+
+    def get_number_of_problems(self) -> int:
+        """
+        Returns number of rows in table
+
+        :return: number of rows in table
+        """
+        self._cur.execute(
+            """
+            SELECT COUNT(*) FROM problems;
+            """,
+        )
+
+        return self._cur.fetchone()[0]
+
+    def get_random_problem(self) -> Problem:
+        """
+        Returns a random problem
+
+        :return: random problem
+        """
+        id = random.randint(1, self.get_number_of_problems())
+        return self.get_at_id(id)
 
 
 if __name__ == "__main__":
     import os
 
     def add_problems():
+        """Adds problems to the database"""
         manager = ProblemManager()
         manager.create_table()
         dirname = os.path.dirname(__file__)
