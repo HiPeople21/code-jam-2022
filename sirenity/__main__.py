@@ -1,6 +1,16 @@
+import uvicorn
+
+import sirenity.app as sirenity
+
+
 def main():
-    """The main function"""
-    print("Hello, world")
+    """Starts the web server"""
+    configuration = uvicorn.Config(
+        sirenity.app,
+    )
+    server = uvicorn.Server(configuration)
+    server.run()
+
 
 
 if __name__ == "__main__":
