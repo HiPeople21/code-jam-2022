@@ -6,7 +6,6 @@ import pytest
 from sirenity.euler import ProblemManager
 from sirenity.euler.problem import Problem
 
-
 if not os.path.exists("test.db"):
     with open("test.db", "w"):
         pass
