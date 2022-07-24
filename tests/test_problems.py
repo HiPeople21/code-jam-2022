@@ -10,7 +10,12 @@ from sirenity.euler.problems_manager import ProblemNotFoundError
 class TestProblemManager(unittest.TestCase):
     """Tests ProblemManager"""
 
-    manager = ProblemManager("test.db")
+    manager: ProblemManager
+    
+    def __init__(self):
+        """Creates a TestProblemManager instance"""
+        super().__init__()
+        self.manager = ProblemManager("test.db")
 
     def test_create_table(self) -> None:
         """Tests that table is created"""
