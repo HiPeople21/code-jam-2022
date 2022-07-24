@@ -10,6 +10,11 @@ from sirenity.euler.problems_manager import ProblemNotFoundError
 class TestProblemManager(unittest.TestCase):
     """Tests ProblemManager"""
 
+    def __init__(self, *args, **kwargs):
+        """Adds ProblemManager"""
+        super().__init__(args, kwargs)
+        self.manager = ProblemManager("test.db")
+
     def test_create_table(self) -> None:
         """Tests that table is created"""
         con = sqlite3.connect(self.manager._file)
@@ -78,7 +83,6 @@ class TestProblemManager(unittest.TestCase):
         with open("test.db", "w") as f:
             f.write("")
 
-        cls.manager = ProblemManager("test.db")
         cls.manager.create_table()
         cls.manager.add_to_db(prompt="Problem prompt", solution="solution")
 

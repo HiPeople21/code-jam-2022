@@ -188,6 +188,7 @@ def add_problems():
 
 if __name__ == "__main__":
     manager = ProblemManager()
+    manager.create_table()
     print(manager.get_random_problem())
     print(manager.get_random_problem(min_difficulty=10))
     print(manager.get_random_problem(max_difficulty=50))
