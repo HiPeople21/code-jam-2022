@@ -12,9 +12,9 @@ class TestProblemManager(unittest.TestCase):
 
     manager: ProblemManager
 
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         """Creates a TestProblemManager instance"""
-        super().__init__()
+        super().__init__(*args, **kwargs)
         self.manager = ProblemManager("test.db")
 
     def test_create_table(self) -> None:
