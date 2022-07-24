@@ -3,3 +3,6 @@
 
 # Development
 For information regarding code-style and etiquette, please see the [Contribution Guidelines](CONTRIBUTING.md).
+
+## Project Euler
+You can download the Project Euler files by running `python -m sirenity.setup.setup_project_euler`

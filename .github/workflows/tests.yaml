@@ -21,6 +21,6 @@ jobs:
         pip install pytest
         pip install pytest-cov
         pip install .
-        pytest tests --cov --cov-report=xml --cov-config=tests/configuration.ini
+        pytest . --cov --cov-report=xml --cov-config=tests/configuration.ini
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
