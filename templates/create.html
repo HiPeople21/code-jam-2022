@@ -1,0 +1,25 @@
+<html>
+    <head>
+        <script src="https://cdn.tailwindcss.com"></script>
+    </head>
+    <body class="bg-slate-600">
+        <h1 class="mx-auto w-fit bg-gray-50 p-4 mt-4">
+            Create a game of ...
+            <!-- TODO ADD NAME !-->
+        </h1>
+        <form action="/game" class="pt-4">
+            <div class="flex flex-col border-4 border-white gap-4">
+                <div class="pt-4">
+                    <label for="name" class="p-4">The name of the lobby:</label>
+                    <input id="name" type="text" class="p-4 w-fit bg-slate-700">
+                </div>
+                <div class="pb-4">
+                    <label for="amount" class="p-4">The amount of players:</label>
+                    <input type="number" id="amount" min="2" max="8" class="p-4 w-fit bg-slate-700">
+                </div>
+            </div>
+            <input type="submit" value="Create" class="p-4 block mx-auto border-4 border-white mt-4 hover:brightness-50 hover:scale-110 shadow-xl">
+        </form>
+
+    </body>
+</html>
