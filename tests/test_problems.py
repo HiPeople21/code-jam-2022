@@ -54,15 +54,15 @@ class TestProblemManager(unittest.TestCase):
         self.assertTrue(isinstance(self.manager.get_random_problem(), Problem))
 
         self.assertTrue(
-            self.manager.get_random_problem(min_difficulty=min_difficulty).difficulty
+            self.manager.get_random_problem(min_difficulty=min_difficulty).difficulty  # type: ignore
             >= min_difficulty
         )
         self.assertTrue(
-            self.manager.get_random_problem(max_difficulty=max_difficulty).difficulty
+            self.manager.get_random_problem(max_difficulty=max_difficulty).difficulty  # type: ignore
             <= max_difficulty
         )
         self.assertTrue(
-            min_difficulty
+            min_difficulty  # type: ignore
             <= self.manager.get_random_problem(
                 min_difficulty=min_difficulty, max_difficulty=max_difficulty
             ).difficulty

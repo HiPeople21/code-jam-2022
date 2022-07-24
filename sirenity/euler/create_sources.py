@@ -1,7 +1,7 @@
 import os
 
-import requests
-from bs4 import BeautifulSoup
+import requests  # type: ignore
+from bs4 import BeautifulSoup  # type: ignore
 
 
 def create_prompts(file: str = "prompts.txt", *, solutions="sources/solutions.txt"):
@@ -19,11 +19,10 @@ def create_prompts(file: str = "prompts.txt", *, solutions="sources/solutions.tx
             soup = BeautifulSoup(
                 requests.get(f"https://projecteuler.net/problem={number}").text
             )
-            difficulty = soup.find("span", class_="tooltiptext_right").text.split(";")[
+            difficulty = soup.find("span", class_="tooltiptext_right").text.split(";")[  # type: ignore
                 -1
             ]
-            if difficulty is None:
-                raise Exception("Tag cannot be found")
+            assert difficulty is not None
             prompt = prompt.replace(
                 'href="project/resources',
                 'href="https://projecteuler.net/project/resources',
@@ -47,9 +46,8 @@ def create_solutions(file: str = "solutions.txt"):
         "https://github.com/luckytoilet/projecteuler-solutions/blob/master/Solutions.md"
     ).text
     soup = BeautifulSoup(text)
-    tbody = soup.find("pre", class_="notranslate").text
-    if tbody is None:
-        raise Exception("Tag cannot be found")
+    tbody = soup.find("pre", class_="notranslate").text  # type: ignore
+    assert tbody is not None
 
     solutions = "\n".join(tbody.splitlines()[3:])
     dirname = os.path.dirname(__file__)
