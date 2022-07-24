@@ -32,3 +32,8 @@ build/
 .vscode/
 # MacOS
 .DS_Store
+
+*.db
+
+prompts.txt
+solutions.txt
