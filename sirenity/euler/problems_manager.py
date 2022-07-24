@@ -1,3 +1,4 @@
+import os
 import sqlite3
 
 from .problem import Problem
@@ -149,8 +150,6 @@ class ProblemManager:
 
 def add_problems():
     """Adds problems to the database"""
-    import os
-
     manager = ProblemManager()
     manager.create_table()
     dirname = os.path.dirname(__file__)
@@ -186,10 +185,15 @@ def add_problems():
         )
 
 
-if __name__ == "__main__":
+def main():
+    """Run some basic functionality tests"""
     manager = ProblemManager()
     manager.create_table()
     print(manager.get_random_problem())
     print(manager.get_random_problem(min_difficulty=10))
     print(manager.get_random_problem(max_difficulty=50))
     print(manager.get_random_problem(min_difficulty=50, max_difficulty=70))
+
+
+if __name__ == "__main__":
+    main()
