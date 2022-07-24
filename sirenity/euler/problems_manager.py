@@ -1,11 +1,10 @@
-import random
 import sqlite3
 
 from .problem import Problem
 
 
-class NotFoundError(Exception):
-    """Custom Exception"""
+class ProblemNotFoundError(Exception):
+    """Thrown when problem is not found"""
 
     pass
 
@@ -34,14 +33,21 @@ class ProblemManager:
             CREATE TABLE IF NOT EXISTS problems (
                 id INTEGER NOT NULL PRIMARY KEY,
                 prompt TEXT NOT NULL,
-                solution TEXT NOT NULL
+                solution TEXT NOT NULL,
+                difficulty INTEGER
             );
             """
         )
 
         self._con.commit()
 
-    def add_to_db(self, prompt: str, solution: str, id: int | None = None) -> None:
+    def add_to_db(
+        self,
+        prompt: str,
+        solution: str,
+        difficulty: int | None = None,
+        id: int | None = None,
+    ) -> None:
         """
         Adds problem to database
 
@@ -53,18 +59,18 @@ class ProblemManager:
         if id is None:
             self._cur.execute(
                 """
-                INSERT INTO problems (prompt, solution)
-                VALUES (?,?)
+                INSERT INTO problems (prompt, solution, difficulty)
+                VALUES (?,?,?)
                 """,
-                (prompt, solution),
+                (prompt, solution, difficulty),
             )
         elif id is not None:
             self._cur.execute(
                 """
-                INSERT INTO problems (id, prompt, solution)
-                VALUES (?,?,?)
+                INSERT INTO problems (id, prompt, solution, difficulty)
+                VALUES (?,?,?,?)
                 """,
-                (id, prompt, solution),
+                (id, prompt, solution, difficulty),
             )
 
         self._con.commit()
@@ -79,7 +85,7 @@ class ProblemManager:
         """
         self._cur.execute(
             """
-            SELECT id, prompt, solution FROM problems
+            SELECT id, prompt, solution, difficulty FROM problems
             WHERE id = ?;
             """,
             (id,),
@@ -87,8 +93,8 @@ class ProblemManager:
 
         row = self._cur.fetchone()
         if row is None:
-            raise NotFoundError(f"Problem of id {id} does not exist")
-        problem = Problem(row[0], row[1], row[2])
+            raise ProblemNotFoundError(f"Problem of id {id} does not exist")
+        problem = Problem(row[0], row[1], row[2], row[3])
         return problem
 
     def check_solution(self, value: str, id: int) -> bool:
@@ -115,33 +121,74 @@ class ProblemManager:
 
         return self._cur.fetchone()[0]
 
-    def get_random_problem(self) -> Problem:
+    def get_random_problem(
+        self, *, min_difficulty: int = 0, max_difficulty: int = 100
+    ) -> Problem:
         """
         Returns a random problem
 
+        :param min_difficulty: Minimum difficulty of the problem
+        :param max_difficulty:Maximum difficulty of the problem
         :return: random problem
         """
-        no_of_problems = self.get_number_of_problems()
-        if no_of_problems == 0:
-            raise NotFoundError("No problems found in table")
-        id = random.randint(1, self.get_number_of_problems())
-        return self.get_at_id(id)
+        self._cur.execute(
+            """
+            SELECT id, prompt, solution, difficulty FROM problems
+            WHERE difficulty BETWEEN ? AND ?
+            ORDER BY RANDOM() LIMIT 1;
+            """,
+            (min_difficulty, max_difficulty),
+        )
+
+        row = self._cur.fetchone()
+        if row is None:
+            raise ProblemNotFoundError("No problems can be found")
+
+        return Problem(row[0], row[1], row[2], row[3])
+
+
+def add_problems():
+    """Adds problems to the database"""
+    import os
+
+    manager = ProblemManager()
+    manager.create_table()
+    dirname = os.path.dirname(__file__)
+    filename = os.path.join(dirname, "sources/prompts.txt")
+
+    questions = []
+    with open(filename, "r", encoding="utf-8") as file:
+        prompts = file.read().split("==========")
+
+        for prompt in prompts:
+            prompt, difficulty = prompt.strip().split("----------")
+            if difficulty.strip().startswith("Solved by "):
+                difficulty = None
+            else:
+                try:
+                    difficulty = int(difficulty.split("Difficulty rating: ")[1][:-1])
+                except ValueError:
+                    difficulty = int(
+                        difficulty.split("Difficulty rating: ")[1].split(
+                            " (Not yet finalised)"
+                        )[0][:-1]
+                    )
+            question_number, prompt = prompt.split("\n", 1)
+            question_number = int(question_number.split("Question ")[1])
+            filename = os.path.join(dirname, "sources/solutions.txt")
+            with open(filename, "r", encoding="utf-8") as file:
+                solution = file.readlines()[question_number - 1].split(". ")[1].strip()
+            questions.append((prompt, difficulty, solution))
+
+    for index, question in enumerate(questions, 1):
+        manager.add_to_db(
+            prompt=question[0], difficulty=question[1], solution=question[2], id=index
+        )
 
 
 if __name__ == "__main__":
-    import os
-
-    def add_problems():
-        """Adds problems to the database"""
-        manager = ProblemManager()
-        manager.create_table()
-        dirname = os.path.dirname(__file__)
-        filename = os.path.join(dirname, "sources/prompts.txt")
-        with open(filename, "r", encoding="utf-8") as f:
-            prompts = f.read().split("==========")
-        filename = os.path.join(dirname, "sources/solutions.txt")
-        with open(filename, "r", encoding="utf-8") as f:
-            solutions = f.read().splitlines()[: len(prompts)]
-        qs = zip(prompts, solutions)
-        for index, q in enumerate(qs, 1):
-            manager.add_to_db(q[0], q[1], index)
+    manager = ProblemManager()
+    print(manager.get_random_problem())
+    print(manager.get_random_problem(min_difficulty=10))
+    print(manager.get_random_problem(max_difficulty=50))
+    print(manager.get_random_problem(min_difficulty=50, max_difficulty=70))

@@ -1,10 +1,10 @@
-from dataclasses import dataclass
+from typing import NamedTuple
 
 
-@dataclass(slots=True)
-class Problem:
+class Problem(NamedTuple):
     """Class that stores the data of the problem"""
 
     id: int
     prompt: str
     solution: str
+    difficulty: int | None
