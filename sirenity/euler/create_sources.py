@@ -22,6 +22,8 @@ def create_prompts(file: str = "prompts.txt", *, solutions="sources/solutions.tx
             difficulty = soup.find("span", class_="tooltiptext_right").text.split(";")[
                 -1
             ]
+            if difficulty is None:
+                raise Exception("Tag cannot be found")
             prompt = prompt.replace(
                 'href="project/resources',
                 'href="https://projecteuler.net/project/resources',
@@ -46,6 +48,9 @@ def create_solutions(file: str = "solutions.txt"):
     ).text
     soup = BeautifulSoup(text)
     tbody = soup.find("pre", class_="notranslate").text
+    if tbody is None:
+        raise Exception("Tag cannot be found")
+
     solutions = "\n".join(tbody.splitlines()[3:])
     dirname = os.path.dirname(__file__)
     filename = os.path.join(dirname, f"sources/{file}")
