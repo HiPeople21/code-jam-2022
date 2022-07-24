@@ -1,6 +1,7 @@
-import os
 import sqlite3
+import tempfile
 import unittest
+from typing import ClassVar
 
 from sirenity.euler import ProblemManager
 from sirenity.euler.problem import Problem
@@ -10,12 +11,7 @@ from sirenity.euler.problems_manager import ProblemNotFoundError
 class TestProblemManager(unittest.TestCase):
     """Tests ProblemManager"""
 
-    manager: ProblemManager
-
-    def __init__(self, *args, **kwargs):
-        """Creates a TestProblemManager instance"""
-        super().__init__(*args, **kwargs)
-        self.manager = ProblemManager("test.db")
+    manager: ClassVar[ProblemManager]
 
     def test_create_table(self) -> None:
         """Tests that table is created"""
@@ -77,13 +73,9 @@ class TestProblemManager(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         """Prepares tests"""
-        if not os.path.exists("test.db"):
-            with open("test.db", "w"):
-                pass
-
-        # Clear db
-        with open("test.db", "w") as f:
-            f.write("")
+        file = tempfile.NamedTemporaryFile(suffix="db")
+        file.close()
+        cls.manager = ProblemManager(file.name)
 
         cls.manager.create_table()
         cls.manager.add_to_db(prompt="Problem prompt", solution="solution")
