@@ -3,26 +3,24 @@ import tempfile
 import unittest
 from typing import ClassVar
 
-from sirenity.euler import ProblemManager
-from sirenity.euler.problem import Problem
-from sirenity.euler.problems_manager import ProblemNotFoundError
+from sirenity.euler import Problem, ProblemManager, ProblemNotFoundError
 
 
 class TestProblemManager(unittest.TestCase):
     """Tests ProblemManager"""
 
     manager: ClassVar[ProblemManager]
+    database_location: ClassVar[str]
 
     def test_create_table(self) -> None:
-        """Tests that table is created"""
-        con = sqlite3.connect(self.manager._file)
-        cur = con.cursor()
-        self.manager.create_table()
-        cur.execute(
+        """Tests that table is in fact created"""
+        connection = sqlite3.connect(self.database_location)
+        cursor = connection.cursor()
+        cursor.execute(
             "SELECT name FROM sqlite_master WHERE type='table' AND name='problems';"
         )
-        self.assertEqual(len(cur.fetchall()), 1)
-        con.close()
+        self.assertEqual(len(cursor.fetchall()), 1)
+        connection.close()
 
     def test_add_and_get_problem(self) -> None:
         """Tests that problems are added and are retrieved"""
@@ -45,12 +43,14 @@ class TestProblemManager(unittest.TestCase):
         """Checks that a random problem is returned and the difficulty is within the range"""
         min_difficulty, max_difficulty = 30, 70
 
-        if self.manager.get_number_of_problems() == 0:
-            with self.assertRaises(ProblemNotFoundError):
-                self.manager.get_random_problem()
         for i in range(10):
-            self.manager.add_to_db(
-                prompt="Problem prompt", solution="solution", difficulty=i * 10
+            self.manager.add_problem(
+                Problem(
+                    id=i * 10,
+                    prompt="Problem prompt",
+                    solution="solution",
+                    difficulty=i * 10,
+                )
             )
         self.assertTrue(isinstance(self.manager.get_random_problem(), Problem))
 
@@ -75,10 +75,14 @@ class TestProblemManager(unittest.TestCase):
         """Prepares tests"""
         file = tempfile.NamedTemporaryFile(suffix="db")
         file.close()
+
+        cls.database_location = file.name
         cls.manager = ProblemManager(file.name)
 
         cls.manager.create_table()
-        cls.manager.add_to_db(prompt="Problem prompt", solution="solution")
+        cls.manager.add_problem(
+            Problem(id=1, prompt="Problem prompt", solution="solution", difficulty=1)
+        )
 
 
 if __name__ == "__main__":
