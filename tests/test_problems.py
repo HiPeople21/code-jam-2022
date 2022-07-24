@@ -11,7 +11,7 @@ class TestProblemManager(unittest.TestCase):
     """Tests ProblemManager"""
 
     manager: ProblemManager
-    
+
     def __init__(self):
         """Creates a TestProblemManager instance"""
         super().__init__()
