@@ -1,13 +1,16 @@
 import json
+import pathlib
 
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
+ROOT = pathlib.Path(__file__).parent
+
 app = FastAPI()
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
-templates = Jinja2Templates(directory="templates")
+app.mount("/static", StaticFiles(directory=ROOT / "static"), name="static")
+templates = Jinja2Templates(directory=ROOT / "templates")
 
 
 @app.get("/")
