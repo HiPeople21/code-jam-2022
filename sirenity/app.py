@@ -5,6 +5,9 @@ from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
+from .game_manager import GameManager
+from .message import Message
+
 ROOT = pathlib.Path(__file__).parent
 
 app = FastAPI()
@@ -25,31 +28,32 @@ def game(request: Request):
     return templates.TemplateResponse("create.html", {"request": request})
 
 
-# Game manager class can handle the next few lines
-clients = set()
-next_id = 0
-
-
 @app.websocket("/update-code")
 async def update_Code(websocket: WebSocket):
     """Handles changes between clients"""
-    global change, next_id
+    game_manager = app.game_manager
+    if game_manager is None:
+        raise Exception("No GameManager instance")
     await websocket.accept()
-    clients.add(websocket)
-    await websocket.send_text(json.dumps({"action": "id", "user_id": next_id}))
-    next_id += 1
+    client_id, token = game_manager.add_client(websocket)
+    await websocket.send_text(
+        json.dumps({"action": "assign_id", "user_id": client_id, "token": token})
+    )
     try:
         while True:
-            data = json.loads(await websocket.receive_text())
-            for client in clients:
-                if client == websocket:
-                    continue
-                await client.send_text(json.dumps(data))
+            data = Message(await websocket.receive_text())
+            await game_manager.broadcast(client_id, data)
     except WebSocketDisconnect:
-        clients.remove(websocket)
+        game_manager.remove_client(client_id)
 
 
 @app.get("/web-ide")
 def web_ide(request: Request):
     """Returns HTML file containing the web IDE"""
     return templates.TemplateResponse("send-code.html", {"request": request})
+
+
+@app.on_event("startup")
+async def start_up():
+    """Initialises the GameManager"""
+    app.game_manager = GameManager()

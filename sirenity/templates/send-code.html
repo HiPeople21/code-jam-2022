@@ -35,10 +35,6 @@
         left: 0;
       }
 
-      .cursor {
-        animation: disappear 1s linear;
-      }
-
       @keyframes disappear {
         from {
           opacity: 1;
@@ -46,6 +42,13 @@
         to {
           opacity: 0;
         }
+      }
+
+      .cursor::before {
+        content: attr(user-name);
+        position: relative;
+        top: 0;
+        left: 0;
       }
     </style>
   </head>
@@ -64,12 +67,11 @@
         <select id="theme-select"></select>
         <input
           id="editor-font-size"
-          type="range"
-          min="5"
-          max="100"
+          type="number"
+          min="10"
+          max="50"
           value="12"
         />
-        <label id="editor-font-size-label" for="editor-font-size">12px</label>
 
         <div id="editor"></div>
       </main>
