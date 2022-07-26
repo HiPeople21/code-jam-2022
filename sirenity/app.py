@@ -22,24 +22,22 @@ def game(request: Request):
     return templates.TemplateResponse("create.html", {"request": request})
 
 
+# Game manager class can handle the next few lines
 clients = set()
-
-change = {}
+next_id = 0
 
 
 @app.websocket("/update-code")
 async def update_Code(websocket: WebSocket):
     """Handles changes between clients"""
-    global change
+    global change, next_id
     await websocket.accept()
     clients.add(websocket)
+    await websocket.send_text(json.dumps({"action": "id", "user_id": next_id}))
+    next_id += 1
     try:
         while True:
             data = json.loads(await websocket.receive_text())
-            if data == change:
-                continue
-
-            change = data
             for client in clients:
                 if client == websocket:
                     continue

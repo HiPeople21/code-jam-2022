@@ -9,7 +9,7 @@ window.addEventListener('DOMContentLoaded', () => {
         mode: "ace/mode/python",
         selectionStyle: "text"
     });
-
+    const editorElement = document.getElementById("editor");
     editor.setOptions({
         autoScrollEditorIntoView: true,
         copyWithEmptySelection: true,
@@ -62,8 +62,9 @@ window.addEventListener('DOMContentLoaded', () => {
         "xcode",
     ];
 
-    const themeForm = document.querySelector('form#theme-form');
     const themeSelect = document.querySelector('select#theme-select');
+    const editorFontSize = document.querySelector('input#editor-font-size');
+    const editorFontSizeLabel = document.querySelector('label#editor-font-size-label');
     for(const theme of themes) {
         const node = document.createElement('option');
         if (theme == 'textmate'){
@@ -74,8 +75,7 @@ window.addEventListener('DOMContentLoaded', () => {
         themeSelect.appendChild(node);
     }
 
-    themeForm.addEventListener('submit', (e) => {
-        e.preventDefault();
+    themeSelect.addEventListener('change', (e) => {
         const themeCDN = themeSelect.value;
         const theme = themeCDN.slice('https://cdnjs.cloudflare.com/ajax/libs/ace/1.8.1/theme-'.length, -('.min.js'.length));
         if(!themes.includes(theme)) return;
@@ -85,36 +85,113 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
 
-    // let cursorPos =
+
+    const lineNumberLeftMargin = 20;
+    let editorLineHeight = Math.round(editor.getFontSize() * (6 / 5));
+
+    let charWidth= editor.getFontSize() / 2 + Math.round(editor.getFontSize() / 20);
+    const lineNumberRightMargin= 12;
+    const marginBetweenLineNumberAndText = 3;
+    editorFontSize.addEventListener('change', (e) => {
+        editor.setFontSize(editorFontSize.value + 'px');
+        editorFontSizeLabel.innerText = editorFontSize.value + 'px';
+        editorLineHeight = Math.round(editor.getFontSize() * (6 / 5));
+        charWidth= editor.getFontSize() * 2 + Math.round(editor.getFontSize() / 20);
+    });
+
+    let userId;
+    let typed = false;
+    let focused = false;
+    let receivedRemove = false;
     editor.addEventListener('change', (e) => {
+        if((!typed || !focused) && (e.action != 'remove' || receivedRemove)) {
+            return;
+        }
+        receivedRemove = false;
+
         websocket.send(JSON.stringify({
             text: e.lines,
             start: e.start,
             end: e.end,
             action: e.action,
+            user_id: userId
         }));
     });
+
+    function addOtherCursor(pos, name) {
+        const cursor = document.createElement('div');
+        cursor.style.width = '1px';
+        cursor.style.height = editorLineHeight + 'px';
+        cursor.setAttribute('user-name', name);
+        cursor.style.backgroundColor = 'red';
+        cursor.style.position = 'absolute';
+        cursor.classList.add('cursor');
+        let {left, top}= editorElement.getBoundingClientRect();
+        cursor.style.left = (
+            left
+            + lineNumberLeftMargin
+            + lineNumberRightMargin
+            + (pos.row  +1) * charWidth  // Line number width
+            + (pos.column + 1) * charWidth
+            +marginBetweenLineNumberAndText
+            + 'px');
+        cursor.style.top = (
+            top
+            +pos.row * editorLineHeight
+            +'px'
+        );
+        document.body.appendChild(cursor);
+        setTimeout(() => {
+
+            cursor.remove()
+        }, 1000);
+    }
+
+
     websocket.addEventListener('message', ({data}) => {
         data = JSON.parse(data);
-        editor_document = editor.getSession().getDocument();
-        if(data.action == 'insert'){
-            if(data.text == ['', '']) {
-                editor_document.insertMergedLines(data.start, ['', '']);
-            } else{
-                editor_document.insert(data.start, data.text.join(''));
-            }
-        } else if (data.action == 'remove') {
-            editor_document.remove(new Range(
-                data.start.row,
-                data.start.column,
-                data.end.row,
-                data.end.column
-                )
-            );
+        if(data.action == 'id') {
+            userId = data.user_id;
         } else {
-            console.log('Unknown action: '+ data.action)
-        }
+            if(data.user_id == userId) return;
+            editorDocument = editor.getSession().getDocument();
+            editSession = editor.getSession();
 
+            if(data.action == 'insert'){
+                editorDocument.insertMergedLines(data.start, data.text);
+                addOtherCursor(data.end, data.user_id);
+            } else if (data.action == 'remove') {
+
+                receivedRemove = true;
+                editorDocument.remove(new Range(
+                    data.start.row,
+                    data.start.column,
+                    data.end.row,
+                    data.end.column
+                    )
+                );
+                addOtherCursor(data.end, data.user_id);
+            } else {
+                console.log('Unknown action: '+ data.action);
+            }
+        }
     });
 
+
+    window.addEventListener('keydown', (e) => {
+        typed = true;
+    });
+
+
+    window.addEventListener('keyup', (e) => {
+        typed = false;
+    });
+
+    editor.addEventListener('focus', (e) => {
+        focused = true;
+    });
+
+    editor.addEventListener('blur', (e) => {
+        focused = false;
+    });
 });
