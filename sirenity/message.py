@@ -11,11 +11,11 @@ class Message:
 
     def __init__(self, message: str) -> None:
         """Assigns values"""
-        message = json.loads(message)
-        self.action = message.get("action")
-        self.user_id = message.get("user_id")
-        self.token = message.get("token")
-        self.data = message.get("data")
+        message_dict = json.loads(message)
+        self.action = message_dict.get("action")
+        self.user_id = message_dict.get("user_id")
+        self.token = message_dict.get("token")
+        self.data = message_dict.get("data")
 
     def __str__(self) -> str:
         """

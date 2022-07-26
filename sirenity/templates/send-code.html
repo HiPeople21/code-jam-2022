@@ -44,11 +44,14 @@
         }
       }
 
-      .cursor::before {
+      .cursor:hover::before {
         content: attr(user-name);
         position: relative;
-        top: 0;
-        left: 0;
+        top: calc(-1 * calc(var(--font-size) / 12));
+        background-color: yellow;
+
+        left: 1px;
+        font-size: inherit;
       }
     </style>
   </head>

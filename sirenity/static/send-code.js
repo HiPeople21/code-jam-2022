@@ -62,7 +62,6 @@ window.addEventListener('DOMContentLoaded', () => {
     const selectionObject = editor.getSession().getSelection();
 
 
-
     const themeSelect = document.querySelector('select#theme-select');
     const editorFontSize = document.querySelector('input#editor-font-size');
     for(const theme of themes) {
@@ -86,10 +85,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
     let editorLineHeight = editor.getFontSize() * (7 / 6);
-
-    // let charWidth= (editor.getFontSize / 2) * 1.1;//editor.getFontSize() / 2 + editor.getFontSize() / 20;
-
-    // let gutterWidth = gutterElement.getBoundingClientRect().width//parseInt(gutterElement.style.width.slice(0, -2));
+    editor.setFontSize('12px');
 
     editorFontSize.addEventListener('change', (e) => {
         if(editorFontSize.value > 50) {
@@ -98,31 +94,60 @@ window.addEventListener('DOMContentLoaded', () => {
             editorFontSize.value = 10;
         }
         editor.setFontSize(editorFontSize.value + 'px');
-        // editorLineHeight = editor.getFontSize() * (7 / 6);
-        // charWidth= (editor.getFontSize / 2) * 1.1;
-        // gutterWidth = gutterElement.getBoundingClientRect().width;
+        editorLineHeight = editor.getFontSize().slice(0,-2) * (7 / 6);
+        for(const key in otherCursors) {
+            const cursor = otherCursors[key].cursor
+            cursor.style.height = editorLineHeight + 'px';
+            cursor.style.width = 1 + Math.floor(editor.getFontSize().slice(0,-2) / 25) + 'px';
+            cursor.style.fontSize = editor.getFontSize();
+            cursor.style.setProperty('--font-size', editor.getFontSize());
+
+            const {row, column} = otherCursors[key].pos
+            const {pageX, pageY} = editor.renderer.textToScreenCoordinates(row, column);
+            cursor.style.left = (
+                pageX
+                + 'px');
+            cursor.style.top = (
+                pageY
+                +'px'
+            );
+        }
     });
 
 
 
 
     const otherCursors = {};
-    const currentlyShowing = {};
     function addOtherCursor(pos, name) {
         let cursor;
         const {pageX, pageY} = editor.renderer.textToScreenCoordinates(pos.row, pos.column)
         if(!otherCursors.hasOwnProperty(name)){
             cursor = document.createElement('div');
-            cursor.style.width = '1px';
+            cursor.style.width = 1 + Math.floor(editor.getFontSize().slice(0,-2) / 25) + 'px';
             cursor.style.height = editorLineHeight + 'px';
             cursor.setAttribute('user-name', name);
             cursor.style.backgroundColor = 'red';
             cursor.style.position = 'absolute';
             cursor.classList.add('cursor');
-            otherCursors[name] = cursor;
+            cursor.style.fontSize = editor.getFontSize();
+            cursor.style.setProperty('--font-size', editor.getFontSize());
+
+
+
+            otherCursors[name] = {
+                cursor: cursor,
+                pos: {
+                    row: pos.row,
+                    column: pos.column,
+                },
+            };
             document.body.appendChild(cursor);
         } else {
-            cursor = otherCursors[name];
+            cursor = otherCursors[name].cursor;
+            otherCursors[name].pos = {
+                row: pos.row,
+                column: pos.column,
+            }
         }
 
 
@@ -133,29 +158,11 @@ window.addEventListener('DOMContentLoaded', () => {
             pageY
             +'px'
         );
-        cursor.style.display= 'block';
 
-        cursor.style.animation = 'disappear 1s linear';
-        if(currentlyShowing.hasOwnProperty(name)) {
-            currentlyShowing[name] += 1;
-        } else {
-            currentlyShowing[name] = 1;
-        }
-        setTimeout(() => {
-            currentlyShowing[name] -= 1;
-            if(currentlyShowing[name] == 0){
-                delete currentlyShowing[name];
-            } else {
-                return
-            }
-            cursor.style.animation = '';
-            cursor.style.display= 'none';
-        }, 1000)
     }
     let userId, token;
     editor.addEventListener('change', (e) => {
         if (!(editor.curOp && editor.curOp.command.name)) return
-        let a = editor.renderer.textToScreenCoordinates(e.end.row, e.end.column)
         websocket.send(JSON.stringify({
             data: {
                 text: e.lines,
@@ -167,7 +174,10 @@ window.addEventListener('DOMContentLoaded', () => {
             token: token,
         }));
     });
+
+
     selectionObject.addEventListener('changeCursor', (e) => {
+        if (!(editor.curOp && editor.curOp.command.name)) return
         websocket.send(JSON.stringify({
             data: {
                 pos: selectionObject.getCursor(),
@@ -208,4 +218,7 @@ window.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
+
+
+
 });
