@@ -1,3 +1,4 @@
+import contextvars
 import json
 import pathlib
 
@@ -11,6 +12,9 @@ from .message import Message
 ROOT = pathlib.Path(__file__).parent
 
 app = FastAPI()
+
+game_manager_context: contextvars.ContextVar = contextvars.ContextVar("game_manager")
+game_manager_context.set(GameManager())
 
 app.mount("/static", StaticFiles(directory=ROOT / "static"), name="static")
 templates = Jinja2Templates(directory=ROOT / "templates")
@@ -31,7 +35,7 @@ def game(request: Request):
 @app.websocket("/update-code")
 async def update_Code(websocket: WebSocket):
     """Handles changes between clients"""
-    game_manager = app.game_manager
+    game_manager = game_manager_context.get()
     if game_manager is None:
         raise Exception("No GameManager instance")
     await websocket.accept()
@@ -51,9 +55,3 @@ async def update_Code(websocket: WebSocket):
 def web_ide(request: Request):
     """Returns HTML file containing the web IDE"""
     return templates.TemplateResponse("send-code.html", {"request": request})
-
-
-@app.on_event("startup")
-async def start_up():
-    """Initialises the GameManager"""
-    app.game_manager = GameManager()

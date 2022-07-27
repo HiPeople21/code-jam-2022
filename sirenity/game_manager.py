@@ -11,7 +11,7 @@ class GameManager:
 
     def __init__(self):
         """Sets some attributes"""
-        self.clients: dict[str, Client] = {}
+        self.clients: dict[int, Client] = {}
         self.current_id = 0
 
     async def broadcast(self, client_id: int, message: Message) -> None:
