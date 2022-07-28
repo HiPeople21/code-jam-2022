@@ -16,7 +16,7 @@ class GameManager:
     def __init__(
         self,
         database: str = "problems.db",
-        csv_file: str = "euler.csv",
+        csv_file: str = "",
         min_difficulty: int = 0,
         max_difficulty: int = 100,
     ):
@@ -29,10 +29,16 @@ class GameManager:
         self.clients: dict[int, Client] = {}
         self.current_id: int = 0
         self.questions: list[Problem] = []
-        self.problem_manager: ProblemManager = ProblemManager(
-            os.path.join(os.path.dirname(__file__), database),
-            open(os.path.join(os.path.dirname(__file__), csv_file)),
-        )
+        if csv_file:
+
+            self.problem_manager: ProblemManager = ProblemManager(
+                os.path.join(os.path.dirname(__file__), database),
+                open(os.path.join(os.path.dirname(__file__), csv_file)),
+            )
+        else:
+            self.problem_manager: ProblemManager = ProblemManager(
+                os.path.join(os.path.dirname(__file__), database),
+            )
         self.problems: list[Problem] = []
         while len(self.problems) < AMOUNT_OF_PROBLEMS:
             problem = self.problem_manager.get_random_problem(
