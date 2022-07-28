@@ -36,7 +36,7 @@ class GameManager:
                 open(os.path.join(os.path.dirname(__file__), csv_file)),
             )
         else:
-            self.problem_manager: ProblemManager = ProblemManager(
+            self.problem_manager = ProblemManager(
                 os.path.join(os.path.dirname(__file__), database),
             )
         self.problems: list[Problem] = []
