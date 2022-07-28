@@ -28,11 +28,18 @@
     <script src="{{ url_for('static', path='/send-code.js') }}" defer></script>
     <style type="text/css">
       #editor {
-        position: absolute;
-        top: 50px;
-        right: 0;
-        bottom: 0;
-        left: 0;
+        height: 100%;
+        width: 75%;
+
+        display: block;
+        overflow-y: auto;
+      }
+      #info {
+        overflow-y: auto;
+      }
+
+      #editor-and-info {
+        height: calc(100vh - 50px);
       }
 
       @keyframes disappear {
@@ -66,17 +73,30 @@
     </noscript>
     <div class="page-content">
       <header></header>
-      <main>
-        <select id="theme-select"></select>
-        <input
-          id="editor-font-size"
-          type="number"
-          min="10"
-          max="50"
-          value="12"
-        />
-
-        <div id="editor"></div>
+      <main class="flex-col">
+        <section id="preferences-and-tabs" class="flex flex-row h-50">
+          <section id="preferences" class="flex justify-center">
+            <select id="theme-select"></select>
+            <input
+              id="editor-font-size"
+              type="number"
+              min="10"
+              max="50"
+              value="12"
+            />
+          </section>
+          <section id="editor-tabs">
+            <span>Placeholder</span>
+          </section>
+        </section>
+        <section id="editor-and-info" class="flex flex-row align-items-stretch">
+          <section id="info" class="w-1/4">
+            <!-- Game description, difficulty etc -->
+            lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
+            eiusmod tempor incididunt ut labore et dolore magna aliqu
+          </section>
+          <div id="editor" class="w-3/4"></div>
+        </section>
       </main>
       <footer></footer>
     </div>
