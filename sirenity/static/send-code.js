@@ -1,22 +1,3 @@
-const placeholderProblems = [
-    {
-        id: 1,
-        prompt: 'hello there',
-        difficulty: 10
-    },
-    {
-        id: 2,
-        prompt: 'General Kenobi',
-        difficulty: 20
-    },
-    {
-        id: 3,
-        prompt: 'IDK what happens next',
-        difficulty: 100
-    }
-]
-
-
 window.addEventListener('DOMContentLoaded', () => {
     const themes = [
         "ambiance",
