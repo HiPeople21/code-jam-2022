@@ -7,7 +7,7 @@ from .client import Client
 from .euler import Problem, ProblemManager
 from .message import Message
 
-AMOUNT_OF_PROBLEMS = 5
+AMOUNT_OF_PROBLEMS = 0
 
 
 class GameManager:
