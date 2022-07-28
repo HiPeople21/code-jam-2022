@@ -13,7 +13,13 @@ AMOUNT_OF_PROBLEMS = 5
 class GameManager:
     """Manages the game"""
 
-    def __init__(self, min_difficulty: int = 0, max_difficulty: int = 100):
+    def __init__(
+        self,
+        database: str = "problems.db",
+        csv_file: str = "euler.csv",
+        min_difficulty: int = 0,
+        max_difficulty: int = 100,
+    ):
         """
         Sets some attributes
 
@@ -24,10 +30,10 @@ class GameManager:
         self.current_id: int = 0
         self.questions: list[Problem] = []
         self.problem_manager: ProblemManager = ProblemManager(
-            os.path.join(os.path.dirname(__file__), "db.db"),
-            open(os.path.join(os.path.dirname(__file__), "euler.csv")),
+            os.path.join(os.path.dirname(__file__), database),
+            open(os.path.join(os.path.dirname(__file__), csv_file)),
         )
-        self.problems = []
+        self.problems: list[Problem] = []
         while len(self.problems) < AMOUNT_OF_PROBLEMS:
             problem = self.problem_manager.get_random_problem(
                 min_difficulty=min_difficulty, max_difficulty=max_difficulty
@@ -73,7 +79,7 @@ class GameManager:
         """
         del self.clients[user_id]
 
-    def get_problems(self) -> list[Problem]:
+    def get_problems(self) -> list[str]:
         """
         Returns a list of problems
 

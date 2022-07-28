@@ -29,9 +29,12 @@ class Problem(NamedTuple):
 
         :return: Problem
         """
+        if dictionary["id"] is None:
+            raise Exception("ID not passed in")
+
         return Problem(
-            id=dictionary["id"],
-            prompt=dictionary["prompt"],
-            difficulty=dictionary["difficulty"],
-            solution=dictionary["solution"],
+            id=int(dictionary["id"]),
+            prompt=str(dictionary["prompt"]),
+            difficulty=int(dictionary["difficulty"]),  # type: ignore
+            solution=str(dictionary["solution"]),
         )

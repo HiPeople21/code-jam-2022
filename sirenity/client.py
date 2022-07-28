@@ -7,6 +7,6 @@ from fastapi import WebSocket
 class Client:
     """Holds client data"""
 
-    id: str
+    id: int
     token: str
     websocket: WebSocket

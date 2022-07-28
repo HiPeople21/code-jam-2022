@@ -139,12 +139,12 @@ class ProblemManager:
 
         return Problem(*row)
 
-    def load_problems(self, source_file: TextIO | None):
+    def load_problems(self, source_file: TextIO):
         """Adds problems to the database"""
         reader = csv.DictReader(source_file)
 
         for row in reader:
             self.add_problem(Problem.from_dictionary(row))
 
-    # def __del__(self):
-    #     self._connection.close()
+    def __del__(self):
+        self._connection.close()
