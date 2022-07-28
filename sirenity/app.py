@@ -14,7 +14,7 @@ ROOT = pathlib.Path(__file__).parent
 app = FastAPI()
 
 game_manager_context: contextvars.ContextVar = contextvars.ContextVar("game_manager")
-game_manager_context.set(GameManager(csv_file="euler.csv"))
+game_manager_context.set(GameManager())
 
 app.mount("/static", StaticFiles(directory=ROOT / "static"), name="static")
 templates = Jinja2Templates(directory=ROOT / "templates")
