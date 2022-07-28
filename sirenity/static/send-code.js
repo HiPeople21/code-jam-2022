@@ -234,6 +234,8 @@ window.addEventListener('DOMContentLoaded', () => {
     const info = document.querySelector('#info');
     websocket.addEventListener('message', ({data}) => {
         data = JSON.parse(data);
+        console.log(data)
+
         if(data.action == 'assign_id') {
             userId = data.user_id;
             token = data.token;
@@ -289,13 +291,16 @@ window.addEventListener('DOMContentLoaded', () => {
                     }));
                 })
                 tabs.appendChild(button);
-            }
-            info.innerHTML = `
-                ${Object.values(problems)[0].problem}
+                if(index == 0 ){
+                    info.innerHTML = `
+                        ${problems[problem.id].problem}
 
-                Difficulty: ${Object.values(problems)[0].difficulty}
-            `;
-            currentProblemID = Object.values(problems)[0].problemID;
+                        Difficulty: ${problems[problem.id].difficulty}
+                    `;
+                    currentProblemID = problems[problem.id].problemID;
+                }
+            }
+
 
         } else {
             if(data.user_id == userId) return;
