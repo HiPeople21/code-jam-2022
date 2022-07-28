@@ -1,18 +1,39 @@
+import os
 import secrets
 
 from fastapi import WebSocket
 
 from .client import Client
+from .euler import Problem, ProblemManager
 from .message import Message
+
+AMOUNT_OF_PROBLEMS = 5
 
 
 class GameManager:
     """Manages the game"""
 
-    def __init__(self):
-        """Sets some attributes"""
+    def __init__(self, min_difficulty: int = 0, max_difficulty: int = 100):
+        """
+        Sets some attributes
+
+        :param min_difficulty: the minimum difficulty of the problem
+        :param max_difficulty: the maximum difficulty of the problem
+        """
         self.clients: dict[int, Client] = {}
-        self.current_id = 0
+        self.current_id: int = 0
+        self.questions: list[Problem] = []
+        self.problem_manager: ProblemManager = ProblemManager(
+            os.path.join(os.path.dirname(__file__), "db.db"),
+            open(os.path.join(os.path.dirname(__file__), "euler.csv")),
+        )
+        self.problems = []
+        while len(self.problems) < AMOUNT_OF_PROBLEMS:
+            problem = self.problem_manager.get_random_problem(
+                min_difficulty=min_difficulty, max_difficulty=max_difficulty
+            )
+            if problem not in self.problems:
+                self.problems.append(problem)
 
     async def broadcast(self, client_id: int, message: Message) -> None:
         """
@@ -51,3 +72,11 @@ class GameManager:
         :param user_id: Client ID
         """
         del self.clients[user_id]
+
+    def get_problems(self) -> list[Problem]:
+        """
+        Returns a list of problems
+
+        :returns: List of problems
+        """
+        return [problem.json() for problem in self.problems]

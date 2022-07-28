@@ -16,7 +16,7 @@ class ProblemNotFoundError(Exception):
 class ProblemManager:
     """Manages changes in database"""
 
-    def __init__(self, database_location: str, sourcefile: TextIO = None):
+    def __init__(self, database_location: str, sourcefile: TextIO | None = None):
         """
         Sets attributes for handling problems
 
@@ -139,12 +139,12 @@ class ProblemManager:
 
         return Problem(*row)
 
-    def load_problems(self, source_file):
+    def load_problems(self, source_file: TextIO | None):
         """Adds problems to the database"""
         reader = csv.DictReader(source_file)
 
         for row in reader:
             self.add_problem(Problem.from_dictionary(row))
 
-    def __del__(self):
-        self._connection.close()
+    # def __del__(self):
+    #     self._connection.close()

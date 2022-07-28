@@ -8,6 +8,7 @@ class Message:
     user_id: int
     token: str
     data: dict[str, list[str] | dict[str, int]]
+    problem_id: int
 
     def __init__(self, message: str) -> None:
         """Assigns values"""
@@ -16,6 +17,7 @@ class Message:
         self.user_id = message_dict.get("user_id")
         self.token = message_dict.get("token")
         self.data = message_dict.get("data")
+        self.problem_id = message_dict.get("problem_id")
 
     def __str__(self) -> str:
         """
@@ -28,5 +30,6 @@ class Message:
                 "action": self.action,
                 "user_id": self.user_id,
                 "data": self.data,
+                "problem_id": self.problem_id,
             }
         )

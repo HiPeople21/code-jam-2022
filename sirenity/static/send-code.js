@@ -1,3 +1,22 @@
+const placeholderProblems = [
+    {
+        id: 1,
+        prompt: 'hello there',
+        difficulty: 10
+    },
+    {
+        id: 2,
+        prompt: 'General Kenobi',
+        difficulty: 20
+    },
+    {
+        id: 3,
+        prompt: 'IDK what happens next',
+        difficulty: 100
+    }
+]
+
+
 window.addEventListener('DOMContentLoaded', () => {
     const themes = [
         "ambiance",
@@ -47,7 +66,7 @@ window.addEventListener('DOMContentLoaded', () => {
     ];
 
     const websocket = new WebSocket(`ws://${window.location.host}/update-code`);
-    var Range = require('ace/range').Range
+    const Range = ace.require('ace/range').Range
 
     ace.config.set("basePath", "https://cdnjs.cloudflare.com/ajax/libs/ace/1.8.1");
     const editor = ace.edit('editor', {
@@ -58,8 +77,9 @@ window.addEventListener('DOMContentLoaded', () => {
         autoScrollEditorIntoView: true,
         copyWithEmptySelection: true,
     });
-
-    const selectionObject = editor.getSession().getSelection();
+    const problems = {};
+    let currentProblemID;
+    let selectionObject = editor.getSession().getSelection();
 
 
     const themeSelect = document.querySelector('select#theme-select');
@@ -118,7 +138,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 
     const otherCursors = {};
-    function addOtherCursor(pos, name) {
+    function addOtherCursor(pos, name, problemID) {
         let cursor;
         const {pageX, pageY} = editor.renderer.textToScreenCoordinates(pos.row, pos.column)
         if(!otherCursors.hasOwnProperty(name)){
@@ -140,6 +160,7 @@ window.addEventListener('DOMContentLoaded', () => {
                     row: pos.row,
                     column: pos.column,
                 },
+                problemID: problemID
             };
             document.body.appendChild(cursor);
         } else {
@@ -148,6 +169,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 row: pos.row,
                 column: pos.column,
             }
+            otherCursors[name].problemID = problemID;
         }
 
 
@@ -158,6 +180,12 @@ window.addEventListener('DOMContentLoaded', () => {
             pageY
             +'px'
         );
+
+        if(problemID != currentProblemID) {
+            cursor.style.display = 'none';
+        } else if (problemID == currentProblemID) {
+            cursor.style.display = 'block';
+        }
 
     }
     let userId, token;
@@ -172,6 +200,19 @@ window.addEventListener('DOMContentLoaded', () => {
             action: e.action,
             user_id: userId,
             token: token,
+            problem_id: currentProblemID
+        }));
+    });
+
+    editor.addEventListener('focus', (e) => {
+        websocket.send(JSON.stringify({
+            data: {
+                pos: selectionObject.getCursor(),
+            },
+            action: 'cursorMove',
+            user_id: userId,
+            token: token,
+            problem_id: currentProblemID
         }));
     });
 
@@ -185,22 +226,90 @@ window.addEventListener('DOMContentLoaded', () => {
             action: 'cursorMove',
             user_id: userId,
             token: token,
+            problem_id: currentProblemID
         }));
     });
 
+    const tabs = document.querySelector('#editor-tabs');
+    const info = document.querySelector('#info');
     websocket.addEventListener('message', ({data}) => {
         data = JSON.parse(data);
         if(data.action == 'assign_id') {
             userId = data.user_id;
             token = data.token;
+            for(let [index, problem] of data.problems.entries()) {
+                problem = JSON.parse(problem)
+                let session;
+                if (index == 0){
+                    session = editor.getSession();
+                } else {
+                    session = ace.createEditSession("", "ace/mode/python")
+                }
+                problems[problem.id] = {
+                    problem: problem.prompt,
+                    problemID: problem.id,
+                    difficulty: problem.difficulty,
+                    session: session
+                }
+                const button = document.createElement('button');
+                button.innerText = `Problem ${problem.id}`;
+                button.setAttribute('problem-id', problem.id)
+                button.addEventListener('click', (e) => {
+
+                    const problemID = e.target.getAttribute('problem-id');
+                    for(const problem of Object.values(problems)){
+                        if(problem.problemID == problemID){
+                            editor.setSession(problem.session);
+                            info.innerHTML = `
+                                ${problem.problem}
+
+                                Difficulty: ${problem.difficulty}
+                            `;
+                            currentProblemID = problem.problemID;
+                        }
+                    }
+
+                    for(const key in otherCursors) {
+                        if (otherCursors[key].problemID != currentProblemID) {
+                            otherCursors[key].cursor.style.display = 'none';
+                        } else if (otherCursors[key].problemID == currentProblemID) {
+                            otherCursors[key].cursor.style.display = 'block';
+                        }
+                    }
+                    selectionObject = editor.getSession().getSelection();
+
+                    websocket.send(JSON.stringify({
+                        data: {
+                            pos: selectionObject.getCursor(),
+                        },
+                        action: 'cursorMove',
+                        user_id: userId,
+                        token: token,
+                        problem_id: currentProblemID
+                    }));
+                })
+                tabs.appendChild(button);
+            }
+            info.innerHTML = `
+                ${Object.values(problems)[0].problem}
+
+                Difficulty: ${Object.values(problems)[0].difficulty}
+            `;
+            currentProblemID = Object.values(problems)[0].problemID;
+
         } else {
             if(data.user_id == userId) return;
-            editorDocument = editor.getSession().getDocument();
-            editSession = editor.getSession();
+            let editorDocument;
+            if(data.problem_id == currentProblemID){
+                editorDocument = editor.getSession().getDocument();
+            } else {
+                editorDocument = problems[data.problem_id].session.getDocument();
+            }
 
             if(data.action == 'insert'){
                 editorDocument.insertMergedLines(data.data.start, data.data.text);
-                addOtherCursor(data.data.end, data.user_id);
+
+                addOtherCursor(data.data.end, data.user_id, data.problem_id);
             } else if (data.action == 'remove') {
 
                 editorDocument.remove(new Range(
@@ -210,9 +319,13 @@ window.addEventListener('DOMContentLoaded', () => {
                     data.data.end.column
                     )
                 );
-                addOtherCursor(data.data.start, data.user_id);
+
+
+                addOtherCursor(data.data.start, data.user_id, data.problem_id);
+
             } else if (data.action == 'cursorMove'){
-                addOtherCursor(data.data.pos, data.user_id);
+
+                addOtherCursor(data.data.pos, data.user_id, data.problem_id);
             } else {
                 console.log('Unknown action: '+ data.action);
             }

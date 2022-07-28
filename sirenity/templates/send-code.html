@@ -66,6 +66,12 @@
         grid-template-columns: 1fr 3fr;
         grid-template-rows: 50px calc(100vh - 50px);
       }
+
+      #editor-tabs {
+        display: flex;
+        flex-direction: row;
+        overflow-x: auto;
+      }
     </style>
   </head>
   <body>
@@ -90,14 +96,8 @@
             value="12"
           />
         </section>
-        <section id="editor-tabs">
-          <span>Placeholder</span>
-        </section>
-        <section id="info">
-          <!-- Game description, difficulty etc -->
-          lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
-          eiusmod tempor incididunt ut labore et dolore magna aliqu
-        </section>
+        <section id="editor-tabs"></section>
+        <section id="info"></section>
         <div id="editor"></div>
       </main>
       <footer></footer>

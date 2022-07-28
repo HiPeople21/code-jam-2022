@@ -41,7 +41,14 @@ async def update_Code(websocket: WebSocket):
     await websocket.accept()
     client_id, token = game_manager.add_client(websocket)
     await websocket.send_text(
-        json.dumps({"action": "assign_id", "user_id": client_id, "token": token})
+        json.dumps(
+            {
+                "action": "assign_id",
+                "user_id": client_id,
+                "token": token,
+                "problems": game_manager.get_problems(),
+            }
+        )
     )
     try:
         while True:
