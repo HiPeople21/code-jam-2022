@@ -29,7 +29,7 @@
     <style type="text/css">
       #editor {
         height: 100%;
-        width: 75%;
+        width: 100%;
 
         display: block;
         overflow-y: auto;
@@ -60,6 +60,12 @@
         left: 1px;
         font-size: inherit;
       }
+
+      main {
+        display: grid;
+        grid-template-columns: 1fr 3fr;
+        grid-template-rows: 50px calc(100vh - 50px);
+      }
     </style>
   </head>
   <body>
@@ -73,30 +79,26 @@
     </noscript>
     <div class="page-content">
       <header></header>
-      <main class="flex-col">
-        <section id="preferences-and-tabs" class="flex flex-row h-50">
-          <section id="preferences" class="flex justify-center">
-            <select id="theme-select"></select>
-            <input
-              id="editor-font-size"
-              type="number"
-              min="10"
-              max="50"
-              value="12"
-            />
-          </section>
-          <section id="editor-tabs">
-            <span>Placeholder</span>
-          </section>
+      <main>
+        <section id="preferences" class="flex justify-center">
+          <select id="theme-select"></select>
+          <input
+            id="editor-font-size"
+            type="number"
+            min="10"
+            max="50"
+            value="12"
+          />
         </section>
-        <section id="editor-and-info" class="flex flex-row align-items-stretch">
-          <section id="info" class="w-1/4">
-            <!-- Game description, difficulty etc -->
-            lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqu
-          </section>
-          <div id="editor" class="w-3/4"></div>
+        <section id="editor-tabs">
+          <span>Placeholder</span>
         </section>
+        <section id="info">
+          <!-- Game description, difficulty etc -->
+          lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do
+          eiusmod tempor incididunt ut labore et dolore magna aliqu
+        </section>
+        <div id="editor"></div>
       </main>
       <footer></footer>
     </div>
