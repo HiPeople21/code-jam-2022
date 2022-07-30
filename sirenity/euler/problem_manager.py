@@ -27,21 +27,19 @@ class ProblemManager:
     ) -> "ProblemManager":
         return ProblemManager(database_location, sourcefile)
 
-    def __init__(self, database_location: str, sourcefile: Optional[TextIO] = None):
+    async def __init__(self, database_location: str, sourcefile: Optional[TextIO] = None):
         """
         Asynchronously sets up class
 
         :param file: Database file
         :param sourcefile: Source file
         """
-        self = ProblemManager()
         self._connection = await aiosqlite.connect(database_location)
         self._cursor = await self._connection.cursor()
         await self.create_table()
 
         if sourcefile:
             await self.load_problems(sourcefile)
-        return self
 
     async def create_table(self) -> None:
         """
