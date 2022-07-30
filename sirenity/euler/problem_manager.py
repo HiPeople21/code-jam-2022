@@ -1,6 +1,6 @@
 import asyncio
 import csv
-from typing import TextIO
+from typing import Optional, TextIO
 
 import aiosqlite
 
@@ -23,10 +23,11 @@ class ProblemManager:
 
     @staticmethod
     async def create(
-        database_location: str, sourcefile: TextIO = None
+        database_location: str, sourcefile: Optional[TextIO] = None
     ) -> "ProblemManager":
+        return ProblemManager(database_location, sourcefile)
 
-    def __init__(self, database_location: str, sourcefile: TextIO | None = None):
+    def __init__(self, database_location: str, sourcefile: Optional[TextIO] = None):
         """
         Asynchronously sets up class
 
