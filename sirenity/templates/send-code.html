@@ -26,53 +26,7 @@
       defer
     ></script>
     <script src="{{ url_for('static', path='/send-code.js') }}" defer></script>
-    <style type="text/css">
-      #editor {
-        height: 100%;
-        width: 100%;
-
-        display: block;
-        overflow-y: auto;
-      }
-      #info {
-        overflow-y: auto;
-      }
-
-      #editor-and-info {
-        height: calc(100vh - 50px);
-      }
-
-      @keyframes disappear {
-        from {
-          opacity: 1;
-        }
-        to {
-          opacity: 0;
-        }
-      }
-
-      .cursor:hover::before {
-        content: attr(user-name);
-        position: relative;
-        top: calc(-1 * calc(var(--font-size) / 12));
-        background-color: yellow;
-
-        left: 1px;
-        font-size: inherit;
-      }
-
-      main {
-        display: grid;
-        grid-template-columns: 1fr 3fr;
-        grid-template-rows: 50px calc(100vh - 50px);
-      }
-
-      #editor-tabs {
-        display: flex;
-        flex-direction: row;
-        overflow-x: auto;
-      }
-    </style>
+    <link rel="stylesheet" href="{{ url_for('static', path='code.css') }}">
   </head>
   <body>
     <noscript>
