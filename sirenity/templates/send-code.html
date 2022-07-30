@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com" defer></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.8.1/ace.min.js"
+      integrity="sha512-IunksvjFi1CZJ59SN0Fw0dSkjMgLrY1PQ0WVPv1L3er6z1zW0AVLXs9nM2ZoEisoRo8eHDQn8FOs2KsZPwrUww=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+      defer
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.8.1/mode-python.min.js"
+      integrity="sha512-W1k0SdTb7FU3nxWYkBLQVhTC8b8BU6Je3deBSnLm/dSQ956goMMnL+NYi2SXse1i7k0eUJNMNycTvbEdrJmEFw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+      defer
+    ></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.8.1/theme-textmate.min.js"
+      integrity="sha512-VE1d8sDypa2IvfFGVnil5k/xdGWtLTlHk/uM0ojHH8b2RRF75UeUBL9btDB8Hhe7ei0TT8NVuHFxWxh5NhdepQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+      defer
+    ></script>
+    <script src="{{ url_for('static', path='/send-code.js') }}" defer></script>
+    <link rel="stylesheet" href="{{ url_for('static', path='code.css') }}">
+  </head>
+  <body>
+    <noscript>
+      <style>
+        .page-content {
+          display: none;
+        }
+      </style>
+      <p>Please enable JavaScript</p>
+    </noscript>
+    <div class="page-content">
+      <header></header>
+      <main>
+        <section id="preferences" class="flex justify-center">
+          <select id="theme-select"></select>
+          <input
+            id="editor-font-size"
+            type="number"
+            min="10"
+            max="50"
+            value="12"
+          />
+        </section>
+        <section id="editor-tabs"></section>
+        <section id="info"></section>
+        <div id="editor"></div>
+      </main>
+      <footer></footer>
+    </div>
+  </body>
+</html>

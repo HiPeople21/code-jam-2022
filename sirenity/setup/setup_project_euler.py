@@ -39,7 +39,7 @@ def download_prompts(outfile, solutions):
                 "https://projecteuler.net/project/resources",
             )
             .replace("project/images", "https://projecteuler.net/project/images")
-        )
+        ).strip()
 
         soup = BeautifulSoup(
             requests.get(f"https://projecteuler.net/problem={problem_id}").text,
