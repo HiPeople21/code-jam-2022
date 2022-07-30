@@ -114,30 +114,35 @@ class ProblemManager:
 
         return self._cursor.fetchone()[0]
 
-    def get_random_problem(
-        self, *, min_difficulty: int = 0, max_difficulty: int = 100
-    ) -> Problem:
+    def get_random_problems(
+        self,
+        number_of_problems: int = 1,
+        *,
+        min_difficulty: int = 0,
+        max_difficulty: int = 100,
+    ) -> list[Problem]:
         """
-        Returns a random problem
+        Returns random problems
 
+        :param number_of_problems: number of problems to be returned
         :param min_difficulty: Minimum difficulty of the problem
         :param max_difficulty:Maximum difficulty of the problem
-        :return: random problem
+        :return: random problems
         """
         self._cursor.execute(
             """
             SELECT id, prompt, solution, difficulty FROM problems
             WHERE difficulty BETWEEN ? AND ?
-            ORDER BY RANDOM() LIMIT 1;
+            ORDER BY RANDOM() LIMIT ?;
             """,
-            (min_difficulty, max_difficulty),
+            (min_difficulty, max_difficulty, number_of_problems),
         )
 
-        row = self._cursor.fetchone()
-        if row is None:
-            raise ProblemNotFoundError("No problems can be found")
+        rows = self._cursor.fetchall()
+        if len(rows) < number_of_problems:
+            raise ProblemNotFoundError("Not enough problems can be found")
 
-        return Problem(*row)
+        return [Problem(*row) for row in rows]
 
     def load_problems(self, source_file):
         """Adds problems to the database"""

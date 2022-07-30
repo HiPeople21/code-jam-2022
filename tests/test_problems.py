@@ -39,9 +39,9 @@ class TestProblemManager(unittest.TestCase):
         self.assertTrue(self.manager.check_solution("solution", 1))
         self.assertFalse(self.manager.check_solution("20933", 1))
 
-    def test_check_random_problem(self) -> None:
-        """Checks that a random problem is returned and the difficulty is within the range"""
-        min_difficulty, max_difficulty = 30, 70
+    def test_check_random_problems(self) -> None:
+        """Checks that random problems are returned and the difficulties are within the range"""
+        min_difficulty, max_difficulty, number_of_problems = 30, 70, 5
 
         for i in range(10):
             self.manager.add_problem(
@@ -52,23 +52,36 @@ class TestProblemManager(unittest.TestCase):
                     difficulty=i * 10,
                 )
             )
-        self.assertTrue(isinstance(self.manager.get_random_problem(), Problem))
+        self.assertTrue(isinstance(self.manager.get_random_problems()[0], Problem))
 
         self.assertTrue(
-            self.manager.get_random_problem(min_difficulty=min_difficulty).difficulty  # type: ignore
+            self.manager.get_random_problems(min_difficulty=min_difficulty)[0].difficulty  # type: ignore
             >= min_difficulty
         )
         self.assertTrue(
-            self.manager.get_random_problem(max_difficulty=max_difficulty).difficulty  # type: ignore
+            self.manager.get_random_problems(max_difficulty=max_difficulty)[0].difficulty  # type: ignore
             <= max_difficulty
         )
         self.assertTrue(
             min_difficulty  # type: ignore
-            <= self.manager.get_random_problem(
+            <= self.manager.get_random_problems(
                 min_difficulty=min_difficulty, max_difficulty=max_difficulty
-            ).difficulty
+            )[0].difficulty
             <= max_difficulty
         )
+
+        problems = self.manager.get_random_problems(
+            number_of_problems=number_of_problems,
+            min_difficulty=min_difficulty,
+            max_difficulty=max_difficulty,
+        )
+
+        self.assertTrue(len(problems) == number_of_problems)
+
+        for problem in problems:
+            self.assertTrue(
+                min_difficulty <= problem.difficulty <= max_difficulty  # type: ignore
+            )
 
     @classmethod
     def setUpClass(cls):
