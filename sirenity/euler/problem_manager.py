@@ -167,12 +167,3 @@ class ProblemManager:
             asyncio.get_running_loop().create_task(self._connection.close())
         except RuntimeError:
             asyncio.run(self._connection.close())
-
-
-async def main():
-    a = await ProblemManager.create("problems.db")
-    await a.get_random_problems(4)
-
-
-if __name__ == "__main__":
-    asyncio.run(main())
