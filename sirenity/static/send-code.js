@@ -283,7 +283,7 @@ window.addEventListener('DOMContentLoaded', () => {
             }
 
 
-        } else {
+        } else if (['insert', 'remove', 'cursorMove'].includes(data.action)) {
             if(data.user_id == userId) return;
             let editorDocument;
             if(data.problem_id == currentProblemID){
@@ -312,12 +312,24 @@ window.addEventListener('DOMContentLoaded', () => {
             } else if (data.action == 'cursorMove'){
 
                 addOtherCursor(data.data.pos, data.user_id, data.problem_id);
-            } else {
-                console.log('Unknown action: '+ data.action);
             }
+        } else if (data.action =='game_end') {
+            editor.setReadOnly(true);
+            let code = {};
+            for (const problem of Object.values(problems)) {
+                code[problem.problemID] = problem.session.getDocument().getAllLines();
+            }
+            websocket.send(JSON.stringify({
+                data: {
+                    code: code,
+                },
+                action: 'submitCode',
+                user_id: userId,
+                token: token,
+                problem_id : -1
+            }));
+        }else {
+            console.log('Unknown action: '+ data.action);
         }
     });
-
-
-
 });

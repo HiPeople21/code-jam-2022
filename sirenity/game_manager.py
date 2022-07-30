@@ -1,5 +1,8 @@
+import asyncio
+import json
 import os
 import secrets
+import threading
 
 from fastapi import WebSocket
 
@@ -7,7 +10,9 @@ from .client import Client
 from .euler import Problem, ProblemManager
 from .message import Message
 
-AMOUNT_OF_PROBLEMS = 0
+AMOUNT_OF_PROBLEMS = 5
+PARENT_DIR = os.path.dirname(__file__)
+TIME_FOR_A_GAME = 30
 
 
 class GameManager:
@@ -29,15 +34,19 @@ class GameManager:
         self.clients: dict[int, Client] = {}
         self.current_id: int = 0
         self.questions: list[Problem] = []
+        self.database = database
+        self.submitted_code: dict[int, dict[str, list[str]]] = {}
+        self.started = False
         if csv_file:
 
             self.problem_manager: ProblemManager = ProblemManager(
-                os.path.join(os.path.dirname(__file__), database),
-                open(os.path.join(os.path.dirname(__file__), csv_file)),
+                os.path.join(PARENT_DIR, database),
+                open(os.path.join(PARENT_DIR, csv_file)),
             )
+            self.csv_file = csv_file
         else:
             self.problem_manager = ProblemManager(
-                os.path.join(os.path.dirname(__file__), database),
+                os.path.join(PARENT_DIR, database),
             )
         self.problems: list[Problem] = []
         while len(self.problems) < AMOUNT_OF_PROBLEMS:
@@ -92,3 +101,64 @@ class GameManager:
         :returns: List of problems
         """
         return [problem.json() for problem in self.problems]
+
+    def start(self) -> None:
+        """Starts the game"""
+        if not self.started:
+            timer = threading.Timer(
+                TIME_FOR_A_GAME, function=asyncio.run, args=(self.game_end(),)
+            )
+            timer.start()
+            self.started = True
+
+    def get_code(self, data: Message) -> dict[int, str] | None:
+        """
+        Gets code from clients
+
+        :param data: Message from the clients
+
+        :returns: Code to be run
+        """
+        if data.user_id in self.submitted_code.keys():
+            return
+        if not secrets.compare_digest(self.clients[data.user_id].token, data.token):
+            return
+        self.submitted_code[data.user_id] = data.data["code"]
+
+        code_variations: dict[int, dict[str, int]] = {
+            problem.id: {} for problem in self.problems
+        }
+        if len(self.submitted_code) == len(self.clients):
+            # Loop below to check which version of the code is the most common.
+            # This prevents getting the wrong code from one person because they
+            # have a high ping or something.
+            for solutions in self.submitted_code.values():
+                for problem_id, solution in solutions.items():
+                    solution = "\n".join(solution)
+                    if code_variations[int(problem_id)].get(solution):
+                        code_variations[int(problem_id)][solution] += 1
+                    else:
+                        code_variations[int(problem_id)][solution] = 1
+
+            code_to_return: dict[int, str] = {}
+            for problem_id, variations in code_variations.items():
+                code_to_return[problem_id] = sorted(
+                    variations.items(), key=lambda variation: variation[1], reverse=True
+                )[0][0]
+
+            return code_to_return
+
+    async def game_end(self) -> None:
+        """Signals to clients to submit code"""
+        for client in self.clients.values():
+            await client.websocket.send_text(
+                str(
+                    Message(
+                        json.dumps(
+                            {
+                                "action": "game_end",
+                            }
+                        )
+                    )
+                )
+            )
