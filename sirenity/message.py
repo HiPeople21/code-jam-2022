@@ -1,6 +1,5 @@
 import json
-
-from .euler import Problem
+from typing import Any
 
 
 class Message:
@@ -43,16 +42,16 @@ class JoinMessage:
     action: str
     user_id: int
     token: str
-    problems: list[Problem]
+    data: dict[str, Any]
 
     def __init__(
-        self, action: str, user_id: int, token: str, problems: list[Problem]
+        self, action: str, user_id: int, token: str, data: dict[str, Any]
     ) -> None:
         """Assigns values"""
         self.action = action
         self.user_id = user_id
         self.token = token
-        self.problems = problems
+        self.data = data
 
     def __str__(self) -> str:
         """
@@ -65,6 +64,14 @@ class JoinMessage:
                 "action": self.action,
                 "user_id": self.user_id,
                 "token": self.token,
-                "problems": self.problems,
+                "data": self.data,
             }
         )
+
+
+class RequestCode:
+    """Used to request code"""
+
+    def __str__(self) -> str:
+        """Returns string representation of data"""
+        return json.dumps({"action": "request_code"})

@@ -8,11 +8,11 @@ from fastapi import WebSocket
 
 from .client import Client
 from .euler import Problem, ProblemManager
-from .message import Message
+from .message import Message, RequestCode
 
 AMOUNT_OF_PROBLEMS = 5
 PARENT_DIR = os.path.dirname(__file__)
-TIME_FOR_A_GAME = 30
+TIME_FOR_A_GAME = 60
 
 
 class GameManager:
@@ -37,6 +37,8 @@ class GameManager:
         self.database = database
         self.submitted_code: dict[int, dict[str, list[str]]] = {}
         self.started = False
+        self.waiting_for_code_request = False
+        self.clients_waiting_for_code: set[WebSocket] = set()
         if csv_file:
 
             self.problem_manager: ProblemManager = ProblemManager(
@@ -69,7 +71,10 @@ class GameManager:
         for id_, client in self.clients.items():
             if client_id == id_:
                 continue
-            await client.websocket.send_text(str(message))
+            try:
+                await client.websocket.send_text(str(message))
+            except RuntimeError:  # Client left or reloaded
+                pass
 
     def add_client(self, websocket: WebSocket) -> tuple[int, str]:
         """
@@ -120,10 +125,10 @@ class GameManager:
         :returns: Code to be run
         """
         if data.user_id in self.submitted_code.keys():
-            return
+            return None
         if not secrets.compare_digest(self.clients[data.user_id].token, data.token):
-            return
-        self.submitted_code[data.user_id] = data.data["code"]
+            return None
+        self.submitted_code[data.user_id] = data.data["code"]  # type: ignore
 
         code_variations: dict[int, dict[str, int]] = {
             problem.id: {} for problem in self.problems
@@ -134,19 +139,20 @@ class GameManager:
             # have a high ping or something.
             for solutions in self.submitted_code.values():
                 for problem_id, solution in solutions.items():
-                    solution = "\n".join(solution)
-                    if code_variations[int(problem_id)].get(solution):
-                        code_variations[int(problem_id)][solution] += 1
+                    solution_str = "\n".join(solution)
+                    if code_variations[int(problem_id)].get(solution_str):
+                        code_variations[int(problem_id)][solution_str] += 1
                     else:
-                        code_variations[int(problem_id)][solution] = 1
+                        code_variations[int(problem_id)][solution_str] = 1
 
             code_to_return: dict[int, str] = {}
-            for problem_id, variations in code_variations.items():
-                code_to_return[problem_id] = sorted(
+            for problem_id, variations in code_variations.items():  # type: ignore
+                code_to_return[int(problem_id)] = sorted(
                     variations.items(), key=lambda variation: variation[1], reverse=True
                 )[0][0]
 
             return code_to_return
+        return None
 
     async def game_end(self) -> None:
         """Signals to clients to submit code"""
@@ -162,3 +168,28 @@ class GameManager:
                     )
                 )
             )
+
+    async def request_code(self, websocket: WebSocket) -> None:
+        """
+        Request code so a late joining or reloading client can have the code
+
+        :param websocket: Client requesting the code
+        """
+        if not self.waiting_for_code_request:
+            self.first_client = list(self.clients.values())[0].websocket
+            await self.first_client.send_text(str(RequestCode()))
+            self.waiting_for_code_request = True
+        self.clients_waiting_for_code.add(websocket)
+
+    async def send_requested_code(self, data: Message) -> None:
+        """
+        Sends requested code to clients
+
+        :param data: Message
+        """
+        for websocket in self.clients_waiting_for_code.copy():
+            try:
+                await websocket.send_text(str(data))
+            except RuntimeError:  # Client left or reloaded
+                pass
+            self.clients_waiting_for_code.remove(websocket)

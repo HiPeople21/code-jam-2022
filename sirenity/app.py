@@ -1,4 +1,3 @@
-import contextvars
 import pathlib
 
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
@@ -10,10 +9,8 @@ from .message import JoinMessage, Message
 
 ROOT = pathlib.Path(__file__).parent
 
-app = FastAPI()
 
-game_manager_context: contextvars.ContextVar = contextvars.ContextVar("game_manager")
-game_manager_context.set(GameManager())
+app = FastAPI()
 
 app.mount("/static", StaticFiles(directory=ROOT / "static"), name="static")
 templates = Jinja2Templates(directory=ROOT / "templates")
@@ -34,7 +31,7 @@ def game(request: Request):
 @app.websocket("/update-code")
 async def update_Code(websocket: WebSocket):
     """Handles changes between clients"""
-    game_manager = game_manager_context.get()
+    game_manager = app.game_manager  # type: ignore
     if game_manager is None:
         raise Exception("No GameManager instance")
     await websocket.accept()
@@ -45,11 +42,13 @@ async def update_Code(websocket: WebSocket):
                 action="assign_id",
                 user_id=client_id,
                 token=token,
-                problems=game_manager.get_problems(),
+                data={"problems": game_manager.get_problems()},
             )
         )
     )
+
     game_manager.start()
+
     try:
         while True:
             data = Message(await websocket.receive_text())
@@ -57,6 +56,16 @@ async def update_Code(websocket: WebSocket):
                 code = game_manager.get_code(data)
                 code  # run and check code
                 continue
+            elif data.action == "requestCode" and game_manager.started:
+
+                await game_manager.request_code(websocket)
+            if game_manager.waiting_for_code_request:
+                if (
+                    game_manager.clients[data.user_id].websocket
+                    == game_manager.first_client
+                ):
+                    await game_manager.send_requested_code(data)
+
             await game_manager.broadcast(client_id, data)
     except WebSocketDisconnect:
         game_manager.remove_client(client_id)
@@ -66,3 +75,15 @@ async def update_Code(websocket: WebSocket):
 def web_ide(request: Request):
     """Returns HTML file containing the web IDE"""
     return templates.TemplateResponse("send-code.html", {"request": request})
+
+
+@app.on_event("startup")
+def startup():
+    """Sets GameManager"""
+    app.game_manager = GameManager()  # type: ignore
+
+
+@app.on_event("shutdown")
+def shutdown():
+    """Closes resources"""
+    del app.game_manager

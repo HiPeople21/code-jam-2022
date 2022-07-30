@@ -215,12 +215,10 @@ window.addEventListener('DOMContentLoaded', () => {
     const info = document.querySelector('#info');
     websocket.addEventListener('message', ({data}) => {
         data = JSON.parse(data);
-        console.log(data)
-
         if(data.action == 'assign_id') {
             userId = data.user_id;
             token = data.token;
-            for(let [index, problem] of data.problems.entries()) {
+            for(let [index, problem] of data.data.problems.entries()) {
                 problem = JSON.parse(problem)
                 let session;
                 if (index == 0){
@@ -282,7 +280,15 @@ window.addEventListener('DOMContentLoaded', () => {
                 }
             }
 
+            websocket.send(JSON.stringify({
+                data: {
 
+                },
+                action: 'request_code',
+                user_id: userId,
+                token: token,
+                problem_id: -1
+            }));
         } else if (['insert', 'remove', 'cursorMove'].includes(data.action)) {
             if(data.user_id == userId) return;
             let editorDocument;
@@ -328,8 +334,30 @@ window.addEventListener('DOMContentLoaded', () => {
                 token: token,
                 problem_id : -1
             }));
-        }else {
+        }else if (data.action == 'request_code') {
+            let code = {};
+            for (const problem of Object.values(problems)) {
+                code[problem.problemID] = problem.session.getDocument().getAllLines();
+            }
+            websocket.send(JSON.stringify({
+                data: {
+                    code: code,
+                },
+                action: 'send_requested_code',
+                user_id: userId,
+                token: token,
+                problem_id : -1
+            }));
+        } else if(data.action == 'send_requested_code') {
+            for (const [problemID, code] of Object.entries(data.data.code)) {
+
+                let document = problems[problemID].session.getDocument()
+                document.replace(new Range(0,0,document.getLength(), document.getAllLines().slice(-1).length), code.join('\n'))
+            }
+
+        } else {
             console.log('Unknown action: '+ data.action);
         }
     });
+    editor.resize()
 });
