@@ -25,6 +25,8 @@ class ProblemManager:
     async def create(
         database_location: str, sourcefile: TextIO = None
     ) -> "ProblemManager":
+
+    def __init__(self, database_location: str, sourcefile: TextIO | None = None):
         """
         Asynchronously sets up class
 
