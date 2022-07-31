@@ -38,27 +38,42 @@
       <p>Please enable JavaScript</p>
     </noscript>
     <div class="page-content">
-      <header></header>
+      <header>
+        <button id="code-nav">Code</button>
+      </header>
       <main>
-        <section id="preferences">
-          <section>
-            <label for="theme-select">Theme:</label>
-            <select id="theme-select"></select>
+        <section id="game">
+          <section id="preferences">
+            <section>
+              <label for="theme-select">Theme:</label>
+              <select id="theme-select"></select>
+            </section>
+            <section>
+              <label for="editor-font-size">Font size:</label>
+              <input
+                id="editor-font-size"
+                type="number"
+                min="10"
+                max="50"
+                value="12"
+              />
+            </section>
           </section>
-          <section>
-            <label for="editor-font-size">Font size:</label>
-            <input
-              id="editor-font-size"
-              type="number"
-              min="10"
-              max="50"
-              value="12"
-            />
-          </section>
+          <section id="editor-tabs"></section>
+          <section id="info"></section>
+          <div id="editor"></div>
         </section>
-        <section id="editor-tabs"></section>
-        <section id="info"></section>
-        <div id="editor"></div>
+        <section id="chat">
+          <section id="messages"></section>
+          <form action="#" id="chat-form">
+            <input type="text" id="chat-input" placeholder="Message" /><button
+              id="chat-submit"
+              type="submit"
+            >
+              Send
+            </button>
+          </form>
+        </section>
       </main>
       <footer></footer>
     </div>

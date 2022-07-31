@@ -12,7 +12,7 @@ from .message import Message, RequestCode
 
 AMOUNT_OF_PROBLEMS = 5
 PARENT_DIR = os.path.dirname(__file__)
-TIME_FOR_A_GAME = 100000
+TIME_FOR_A_GAME = 10
 
 
 class GameManager:
@@ -38,6 +38,7 @@ class GameManager:
         self.submitted_code: dict[int, dict[str, list[str]]] = {}
         self.started = False
         self.waiting_for_code_request = False
+        self.game_ended = False
         self.clients_waiting_for_code: set[WebSocket] = set()
         if csv_file:
 
@@ -69,7 +70,7 @@ class GameManager:
             return
         del message.token
         for id_, client in self.clients.items():
-            if client_id == id_:
+            if client_id == id_ and message.action != "chat_message":
                 continue
             try:
                 await client.websocket.send_text(str(message))
@@ -168,6 +169,7 @@ class GameManager:
                     )
                 )
             )
+        self.game_ended = True
 
     async def request_code(self, websocket: WebSocket) -> None:
         """

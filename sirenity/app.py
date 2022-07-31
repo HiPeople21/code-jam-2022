@@ -1,3 +1,4 @@
+import json
 import pathlib
 
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
@@ -48,7 +49,18 @@ async def update_Code(websocket: WebSocket):
     )
 
     game_manager.start()
-
+    if game_manager.game_ended:
+        await websocket.send_text(
+            str(
+                Message(
+                    json.dumps(
+                        {
+                            "action": "game_end",
+                        }
+                    )
+                )
+            )
+        )
     try:
         while True:
             data = Message(await websocket.receive_text())

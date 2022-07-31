@@ -260,9 +260,19 @@ window.addEventListener('DOMContentLoaded', () => {
             );
             }
     });
-
+    const gameTab =document.getElementById('game');
+    const chatTab =document.getElementById('chat');
     const tabs = document.querySelector('#editor-tabs');
     const info = document.querySelector('#info');
+    const chatNav = document.createElement('button');
+    const messages = document.getElementById('messages');
+    chatNav.id = "chat-nav";
+    chatNav.innerText = 'Chat'
+    const chatForm = document.getElementById('chat-form');
+    const chatInput = document.getElementById('chat-input');
+
+    const gameNav = document.querySelector('#code-nav');
+    let currentButton;
     websocket.addEventListener('message', ({data}) => {
         data = JSON.parse(data);
         if(data.action == 'assign_id') {
@@ -305,9 +315,16 @@ window.addEventListener('DOMContentLoaded', () => {
                         }
                 });
                 const button = document.createElement('button');
+                if (index == 0){
+                    currentButton = button;
+                    currentButton.style.backgroundColor = 'grey'
+                }
                 button.innerText = `Problem ${problem.id}`;
                 button.setAttribute('problem-id', problem.id)
                 button.addEventListener('click', (e) => {
+                    currentButton.style.backgroundColor = 'white';
+                    currentButton = e.target;
+                    currentButton.style.backgroundColor = 'grey'
 
                     const problemID = e.target.getAttribute('problem-id');
                     for(const problem of Object.values(problems)){
@@ -397,6 +414,7 @@ window.addEventListener('DOMContentLoaded', () => {
             for (const problem of Object.values(problems)) {
                 code[problem.problemID] = problem.session.getDocument().getAllLines();
             }
+
             websocket.send(JSON.stringify({
                 data: {
                     code: code,
@@ -406,6 +424,43 @@ window.addEventListener('DOMContentLoaded', () => {
                 token: token,
                 problem_id : -1
             }));
+            for(const cursorData of Object.values(otherCursors)){
+                cursorData.cursor.style.display = 'none';
+            }
+            gameNav.style.backgroundColor = 'grey'
+            chatNav.addEventListener('click',(e) => {
+                chatNav.style.backgroundColor = 'grey'
+                gameNav.style.backgroundColor = 'white'
+                gameTab.style.display=  'none';
+                chatTab.style.display=  'flex';
+
+            })
+            document.querySelector('header').appendChild(chatNav)
+            gameNav.addEventListener('click', (e) => {
+                gameNav.style.backgroundColor = 'grey'
+                chatNav.style.backgroundColor = 'white'
+                gameTab.style.display=  'grid';
+
+                chatTab.style.display=  'none';
+                editor.resize(true)
+
+            })
+
+            chatForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                if(!chatInput.value) return
+                websocket.send(JSON.stringify({
+                    data: {
+                        message: chatInput.value,
+                    },
+                    action: 'chat_message',
+                    user_id: userId,
+                    token: token,
+                    problem_id : -1
+                }));
+                chatInput.value = '';
+            })
+
         }else if (data.action == 'request_code') {
             let code = {};
             for (const problem of Object.values(problems)) {
@@ -427,6 +482,11 @@ window.addEventListener('DOMContentLoaded', () => {
                 document.replace(new Range(0,0,document.getLength(), document.getAllLines().slice(-1).length), code.join('\n'))
             }
 
+        } else if (data.action == 'chat_message'){
+            const message = document.createElement('p');
+            message.innerText = `${data.user_id}: ${data.data.message}`;
+            messages.appendChild(message)
+            message.scrollIntoView()
         } else {
             console.log('Unknown action: '+ data.action);
         }
