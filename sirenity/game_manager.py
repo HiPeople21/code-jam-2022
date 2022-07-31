@@ -12,7 +12,7 @@ from .message import Message, RequestCode
 
 AMOUNT_OF_PROBLEMS = 5
 PARENT_DIR = os.path.dirname(__file__)
-TIME_FOR_A_GAME = 60
+TIME_FOR_A_GAME = 100000
 
 
 class GameManager:

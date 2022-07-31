@@ -60,14 +60,41 @@ window.addEventListener('DOMContentLoaded', () => {
     });
     const problems = {};
     let currentProblemID;
+    const editorElement = document.querySelector("#editor");
+    const gutterElement = document.querySelector(".ace_gutter");
     let selectionObject = editor.getSession().getSelection();
+    for(const scrollbar of document.querySelectorAll('.ace_scrollbar')) {
+        scrollbar.addEventListener('scroll', (e) => {
+            for(const cursorData of Object.values(otherCursors)){
+                if(!cursorData.cursor) return
+                let cursor = cursorData.cursor
 
-
+                const {pageX, pageY} = editor.renderer.textToScreenCoordinates(cursorData.pos.row, cursorData.pos.column)
+                if (pageX <= editorElement.offsetLeft  +gutterElement.offsetWidth
+                    || pageX >= editorElement.offsetLeft + editorElement.offsetWidth +gutterElement.offsetWidth
+                    || pageY <= editorElement.offsetTop
+                    || pageY >= editorElement.offsetTop + editorElement.offsetHeight) {
+                    cursor.style.display = 'none';
+                } else {
+                    cursor.style.display = 'block';
+                }
+                cursor.style.left = (
+                    pageX
+                    + 'px');
+                cursor.style.top = (
+                    pageY
+                    +'px'
+                );
+            }
+        })
+    }
+    let theme_ = localStorage.getItem('theme') || 'textmate'
+    editor.setTheme(`ace/theme/${theme_}`);
     const themeSelect = document.querySelector('select#theme-select');
     const editorFontSize = document.querySelector('input#editor-font-size');
-    for(const theme of themes) {
+    for(let theme of themes) {
         const node = document.createElement('option');
-        if (theme == 'textmate'){
+        if (theme == theme_){
             node.selected = true;
         }
         node.value = `https://cdnjs.cloudflare.com/ajax/libs/ace/1.8.1/theme-${theme}.min.js`;
@@ -77,16 +104,17 @@ window.addEventListener('DOMContentLoaded', () => {
 
     themeSelect.addEventListener('change', (e) => {
         const themeCDN = themeSelect.value;
-        const theme = themeCDN.slice('https://cdnjs.cloudflare.com/ajax/libs/ace/1.8.1/theme-'.length, -('.min.js'.length));
+        let theme = themeCDN.slice('https://cdnjs.cloudflare.com/ajax/libs/ace/1.8.1/theme-'.length, -('.min.js'.length));
         if(!themes.includes(theme)) return;
 
         editor.setTheme(`ace/theme/${theme}`);
+        localStorage.setItem('theme', theme);
     });
 
-
-
-    let editorLineHeight = editor.getFontSize() * (7 / 6);
-    editor.setFontSize('12px');
+    let editorFontSizeValue = localStorage.getItem('editorFontSize') || '12';
+    editor.setFontSize(editorFontSizeValue + 'px');
+    editorFontSize.value = editorFontSizeValue;
+    let editorLineHeight = editor.getFontSize().slice(0,-2) * (7 / 6);
 
     editorFontSize.addEventListener('change', (e) => {
         if(editorFontSize.value > 50) {
@@ -113,6 +141,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 +'px'
             );
         }
+        localStorage.setItem('editorFontSize', editorFontSize.value)
     });
 
 
@@ -209,6 +238,27 @@ window.addEventListener('DOMContentLoaded', () => {
             token: token,
             problem_id: currentProblemID
         }));
+
+        for(const cursorData of Object.values(otherCursors)){
+            const {pageX, pageY} = editor.renderer.textToScreenCoordinates(cursorData.pos.row, cursorData.pos.column)
+            let cursor = cursorData.cursor
+
+            if (pageX <= editorElement.offsetLeft  +gutterElement.offsetWidth
+                || pageX >= editorElement.offsetLeft + editorElement.offsetWidth +gutterElement.offsetWidth
+                || pageY <= editorElement.offsetTop
+                || pageY >= editorElement.offsetTop + editorElement.offsetHeight) {
+                cursor.style.display = 'none';
+            }else {
+                cursor.style.display = 'block';
+            }
+            cursor.style.left = (
+                pageX
+                + 'px');
+            cursor.style.top = (
+                pageY
+                +'px'
+            );
+            }
     });
 
     const tabs = document.querySelector('#editor-tabs');
@@ -232,6 +282,28 @@ window.addEventListener('DOMContentLoaded', () => {
                     difficulty: problem.difficulty,
                     session: session
                 }
+
+                session.addEventListener('changeScrollTop', () => {
+                    for(const cursorData of Object.values(otherCursors)){
+                        const {pageX, pageY} = editor.renderer.textToScreenCoordinates(cursorData.pos.row, cursorData.pos.column)
+                        let cursor = cursorData.cursor
+                        if (pageX <= editorElement.offsetLeft  +gutterElement.offsetWidth
+                            || pageX >= editorElement.offsetLeft + editorElement.offsetWidth +gutterElement.offsetWidth
+                            || pageY <= editorElement.offsetTop
+                            || pageY >= editorElement.offsetTop + editorElement.offsetHeight) {
+                            cursor.style.display = 'none';
+                        }else {
+                            cursor.style.display = 'block';
+                        }
+                        cursor.style.left = (
+                            pageX
+                            + 'px');
+                        cursor.style.top = (
+                            pageY
+                            +'px'
+                        );
+                        }
+                });
                 const button = document.createElement('button');
                 button.innerText = `Problem ${problem.id}`;
                 button.setAttribute('problem-id', problem.id)
@@ -359,5 +431,25 @@ window.addEventListener('DOMContentLoaded', () => {
             console.log('Unknown action: '+ data.action);
         }
     });
-    editor.resize()
+    window.addEventListener('resize', (e) => {
+        for(const cursorData of Object.values(otherCursors)){
+            const {pageX, pageY} = editor.renderer.textToScreenCoordinates(cursorData.pos.row, cursorData.pos.column)
+            let cursor = cursorData.cursor
+            if (pageX <= editorElement.offsetLeft  +gutterElement.offsetWidth
+                || pageX >= editorElement.offsetLeft + editorElement.offsetWidth +gutterElement.offsetWidth
+                || pageY <= editorElement.offsetTop
+                || pageY >= editorElement.offsetTop + editorElement.offsetHeight) {
+                cursor.style.display = 'none';
+            }else {
+                cursor.style.display = 'block';
+            }
+            cursor.style.left = (
+                pageX
+                + 'px');
+            cursor.style.top = (
+                pageY
+                +'px'
+            );
+            }
+    });
 });
