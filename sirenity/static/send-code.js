@@ -427,6 +427,7 @@ window.addEventListener('DOMContentLoaded', () => {
             for (const problem of Object.values(problems)) {
                 code[problem.problemID] = problem.session.getDocument().getAllLines();
             }
+
             websocket.send(JSON.stringify({
                 data: {
                     code: code,
@@ -464,6 +465,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 editor.resize(true)
 
             })
+            
             for(const user of data.data.users){
                 const userElement = document.createElement("div");
                 userElement.className = 'user'
@@ -496,6 +498,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 chatTab.style.display=  'none';
                 votingTab.style.display = 'flex';
             })
+            
             chatForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 if(!chatInput.value) return
@@ -556,6 +559,7 @@ window.addEventListener('DOMContentLoaded', () => {
             const resultSpan = document.createElement('span')
             resultSpan.innerText = `You ${result}! The Bugposter was ${data.data.bugposter}`
             document.querySelector('footer').appendChild(resultSpan)
+        
         } else {
             console.log('Unknown action: '+ data.action);
         }
@@ -581,5 +585,5 @@ window.addEventListener('DOMContentLoaded', () => {
             );
             }
     });
-
+    
 });
