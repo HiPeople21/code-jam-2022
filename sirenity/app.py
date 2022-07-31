@@ -1,3 +1,4 @@
+import json
 import pathlib
 
 from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
@@ -35,7 +36,7 @@ async def update_Code(websocket: WebSocket):
     if game_manager is None:
         raise Exception("No GameManager instance")
     await websocket.accept()
-    client_id, token = game_manager.add_client(websocket)
+    client_id, token = await game_manager.add_client(websocket)
     await websocket.send_text(
         str(
             JoinMessage(
@@ -47,8 +48,18 @@ async def update_Code(websocket: WebSocket):
         )
     )
 
-    game_manager.start()
-
+    if game_manager.game_ended:
+        await websocket.send_text(
+            str(
+                Message(
+                    json.dumps(
+                        {
+                            "action": "game_end",
+                        }
+                    )
+                )
+            )
+        )
     try:
         while True:
             data = Message(await websocket.receive_text())
@@ -56,6 +67,9 @@ async def update_Code(websocket: WebSocket):
                 code = game_manager.get_code(data)
                 code  # run and check code
                 continue
+            elif data.action == "vote":
+                await game_manager.vote(data)
+                return
             elif data.action == "requestCode" and game_manager.started:
 
                 await game_manager.request_code(websocket)
