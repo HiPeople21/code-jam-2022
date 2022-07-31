@@ -69,7 +69,7 @@ async def update_Code(websocket: WebSocket):
                 continue
             elif data.action == "vote":
                 await game_manager.vote(data)
-                return
+                continue
             elif data.action == "requestCode" and game_manager.started:
 
                 await game_manager.request_code(websocket)
