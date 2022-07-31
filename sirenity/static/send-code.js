@@ -262,6 +262,8 @@ window.addEventListener('DOMContentLoaded', () => {
     });
     const gameTab =document.getElementById('game');
     const chatTab =document.getElementById('chat');
+    const votingTab =document.getElementById('voting');
+
     const tabs = document.querySelector('#editor-tabs');
     const info = document.querySelector('#info');
     const chatNav = document.createElement('button');
@@ -272,6 +274,14 @@ window.addEventListener('DOMContentLoaded', () => {
     const chatInput = document.getElementById('chat-input');
 
     const gameNav = document.querySelector('#code-nav');
+    gameNav.style.backgroundColor = 'grey'
+
+    const votingNav = document.createElement('button');
+
+    votingNav.id = "voting-nav";
+    votingNav.innerText = 'Voting';
+    const usersList = document.getElementById('users');
+    let role;
     let currentButton;
     websocket.addEventListener('message', ({data}) => {
         data = JSON.parse(data);
@@ -427,23 +437,63 @@ window.addEventListener('DOMContentLoaded', () => {
             for(const cursorData of Object.values(otherCursors)){
                 cursorData.cursor.style.display = 'none';
             }
-            gameNav.style.backgroundColor = 'grey'
             chatNav.addEventListener('click',(e) => {
                 chatNav.style.backgroundColor = 'grey'
                 gameNav.style.backgroundColor = 'white'
+                votingNav.style.backgroundColor = 'white'
+
                 gameTab.style.display=  'none';
                 chatTab.style.display=  'flex';
+                votingTab.style.display = 'none';
 
             })
             document.querySelector('header').appendChild(chatNav)
+            document.querySelector('header').appendChild(votingNav)
+
             gameNav.addEventListener('click', (e) => {
                 gameNav.style.backgroundColor = 'grey'
                 chatNav.style.backgroundColor = 'white'
+                votingNav.style.backgroundColor = 'white'
+
                 gameTab.style.display=  'grid';
 
                 chatTab.style.display=  'none';
+                votingTab.style.display = 'none';
                 editor.resize(true)
 
+            })
+
+            for(const user of data.data.users){
+                const userElement = document.createElement("div");
+                userElement.className = 'user'
+                const userName = document.createElement("span");
+                userName.innerText = user;
+                const voteButton = document.createElement("button");
+                userElement.appendChild(userName)
+                userElement.appendChild(voteButton)
+                voteButton.addEventListener('click', (e) => {
+                    websocket.send(JSON.stringify({
+                        data: {
+                            voted: user,
+                        },
+                        action: 'vote',
+                        user_id: userId,
+                        token: token,
+                        problem_id : -1
+                    }));
+                })
+                voteButton.innerText = 'Vote'
+                usersList.appendChild(userElement)
+            }
+
+            votingNav.addEventListener('click', (e) => {
+                chatNav.style.backgroundColor = 'white'
+                gameNav.style.backgroundColor = 'white'
+                votingNav.style.backgroundColor = 'grey'
+
+                gameTab.style.display=  'none';
+                chatTab.style.display=  'none';
+                votingTab.style.display = 'flex';
             })
 
             chatForm.addEventListener('submit', (e) => {
@@ -487,6 +537,11 @@ window.addEventListener('DOMContentLoaded', () => {
             message.innerText = `${data.user_id}: ${data.data.message}`;
             messages.appendChild(message)
             message.scrollIntoView()
+        } else if (data.action == 'role') {
+            role = data.data.role;
+            alert('You are the '+ role)
+        } else if (data.action == 'result') {
+            alert(`You ${data.data.result}! The Bugposter was ${data.data.bugposter}`)
         } else {
             console.log('Unknown action: '+ data.action);
         }

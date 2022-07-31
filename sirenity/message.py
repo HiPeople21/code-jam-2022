@@ -8,7 +8,7 @@ class Message:
     action: str
     user_id: int
     token: str
-    data: dict[str, list[str] | dict[str, int]]
+    data: dict[str, list[str] | dict[str, int | str]]
     problem_id: int  # -1 for problem_id means that the message is not to do with a problem
 
     def __init__(self, message: str) -> None:

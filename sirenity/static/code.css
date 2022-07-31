@@ -76,16 +76,12 @@
 }
 
 header {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-around !important;
-  top: 10px;
   height: 30px;
 }
 
 header button {
   border: 1px solid black;
-  width: 50%;
+  width: 33%;
   border-radius: 5px 5px 0 0;
 }
 
@@ -112,4 +108,30 @@ header button {
   height: 10%;
   align-items: center;
   justify-content: center;
+}
+
+#voting {
+  display: none;
+  width: 100%;
+  height: calc(100vh - 30px);
+
+  flex-direction :column;
+}
+
+#voting h2 {
+  text-align: center;
+}
+
+.user {
+  display: flex;
+  padding: 10px;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.user button {
+  border: 1px solid black;
+  border-radius: 5px;
+  padding: 10px;
 }
