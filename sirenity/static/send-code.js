@@ -288,6 +288,9 @@ window.addEventListener('DOMContentLoaded', () => {
         if(data.action == 'assign_id') {
             userId = data.user_id;
             token = data.token;
+            const nameSpan = document.createElement('span')
+            nameSpan.innerText = `You are ${userId}`
+            document.querySelector('footer').appendChild(nameSpan)
             for(let [index, problem] of data.data.problems.entries()) {
                 problem = JSON.parse(problem)
                 let session;
@@ -539,9 +542,24 @@ window.addEventListener('DOMContentLoaded', () => {
             message.scrollIntoView()
         } else if (data.action == 'role') {
             role = data.data.role;
-            alert('You are the '+ role)
+            const roleSpan = document.createElement('span')
+            roleSpan.innerText = 'You are the '+ role
+            document.querySelector('footer').appendChild(roleSpan)
         } else if (data.action == 'result') {
-            alert(`You ${data.data.result}! The Bugposter was ${data.data.bugposter}`)
+            let result;
+            if(role == 'Bugposter') {
+                if (data.data.result == 'lost' ) {
+                    result = 'won'
+                } else if (data.data.result == 'won' ){
+                    result = 'lost'
+                }
+            } else {
+                result = data.data.result;
+            }
+            const resultSpan = document.createElement('span')
+            resultSpan.innerText = `You ${result}! The Bugposter was ${data.data.bugposter}`
+            document.querySelector('footer').appendChild(resultSpan)
+
         } else {
             console.log('Unknown action: '+ data.action);
         }
@@ -567,4 +585,5 @@ window.addEventListener('DOMContentLoaded', () => {
             );
             }
     });
+
 });

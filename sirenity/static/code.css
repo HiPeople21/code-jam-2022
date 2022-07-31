@@ -11,7 +11,7 @@
 }
 
 #editor-and-info {
-  height: calc(100vh - 50px);
+  height: calc(100vh - 80px);
 }
 
 @keyframes disappear {
@@ -40,7 +40,7 @@
 #game {
   display: grid;
   grid-template-columns: 4fr 8fr;
-  grid-template-rows: 50px calc(100vh - 80px);
+  grid-template-rows: 50px calc(100vh - 110px);
 }
 
 #editor-tabs {
@@ -89,7 +89,7 @@ header button {
   display: none;
   flex-direction: column;
   align-items: center;
-  height: calc(100vh - 30px);
+  height: calc(100vh - 60px);
 }
 
 #messages {
@@ -113,7 +113,7 @@ header button {
 #voting {
   display: none;
   width: 100%;
-  height: calc(100vh - 30px);
+  height: calc(100vh - 60px);
 
   flex-direction :column;
 }
@@ -134,4 +134,11 @@ header button {
   border: 1px solid black;
   border-radius: 5px;
   padding: 10px;
+}
+
+footer {
+  display: flex;
+  height: 30px;
+  align-items: center;
+  justify-content: space-around;
 }

@@ -13,7 +13,7 @@ from .message import Message, RequestCode
 
 AMOUNT_OF_PROBLEMS = 10
 PARENT_DIR = os.path.dirname(__file__)
-PEOPLE_PER_GAME = 1
+PEOPLE_PER_GAME = 5
 TIME_FOR_A_GAME = 10
 
 
